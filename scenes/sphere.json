@@ -3,9 +3,9 @@
     {
         "light":
         {
-            "TYPE":"Emitting",
+            "TYPE":"Diffuse",
             "RGB":[1.0,1.0,1.0],
-            "EMITTANCE":5.0
+            "EMITTANCE":0.0
         }
     },
     "Camera":
