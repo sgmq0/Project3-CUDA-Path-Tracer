@@ -291,7 +291,7 @@ __global__ void shadeMaterial(
       // If the material indicates that the object was a light, "light" the ray
       if (material.emittance > 0.0f) {
         pathSegments[idx].color *= (materialColor * material.emittance);
-        //pathSegments[idx].remainingBounces = 0;
+        pathSegments[idx].remainingBounces = 0;
       }
       // Otherwise, sample the bsdf
       else {
@@ -327,13 +327,13 @@ __global__ void finalGather(int nPaths, glm::vec3* image, PathSegment* iteration
     }
 }
 
-struct is_failed_path
+struct is_successful_path
 {
     __host__ __device__
         bool operator()(const PathSegment& path)
     {
         // should fail if paths reach the max iteration
-        return path.remainingBounces <= 0;
+        return path.remainingBounces > 0;
     }
 };
 
@@ -393,6 +393,7 @@ void pathtrace(uchar4* pbo, int frame, int iter)
     int depth = 0;
     PathSegment* dev_path_end = dev_paths + pixelcount;
     int num_paths = dev_path_end - dev_paths;
+    int num_paths_permanent = num_paths;
 
     // --- PathSegment Tracing Stage ---
     // Shoot ray into scene, bounce between objects, push shading chunks
@@ -437,12 +438,12 @@ void pathtrace(uchar4* pbo, int frame, int iter)
         cudaDeviceSynchronize();
 
         // stream compact failed paths (paths that didn't intersect, or paths that reached the max iteration
-        PathSegment* new_end = thrust::remove_if(thrust::device, dev_paths, dev_path_end, is_failed_path());
+        PathSegment* new_end = thrust::stable_partition(thrust::device, dev_paths, dev_path_end, is_successful_path());
         cudaDeviceSynchronize();
-        num_paths = (new_end - dev_paths);
+        num_paths = new_end - dev_paths;
         dev_path_end = new_end;
 
-        if (num_paths == 0 || depth > traceDepth) 
+        if (num_paths == 0 || depth >= traceDepth) 
             iterationComplete = true; // TODO: should be based off stream compaction results.
 
         if (guiData != NULL)
@@ -454,7 +455,7 @@ void pathtrace(uchar4* pbo, int frame, int iter)
     // Assemble this iteration and apply it to the image
     dim3 numBlocksPixels = (pixelcount + blockSize1d - 1) / blockSize1d;
 
-    finalGather<<<numBlocksPixels, blockSize1d>>>(num_paths, dev_image, dev_paths);
+    finalGather<<<numBlocksPixels, blockSize1d>>>(num_paths_permanent, dev_image, dev_paths);
 
     ///////////////////////////////////////////////////////////////////////////
 
