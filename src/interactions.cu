@@ -52,10 +52,14 @@ __host__ __device__ void scatterRay(
     thrust::default_random_engine &rng)
 {
 
-  pathSegment.ray.origin = intersect + 0.01f * normal;
-  pathSegment.ray.direction = normalize(calculateRandomDirectionInHemisphere(normal, rng));
-  pathSegment.color *= m.color;
-  pathSegment.remainingBounces--;
+    glm::vec3 newOrigin = intersect + EPSILON * normal;
+    glm::vec3 newDirection = normalize(calculateRandomDirectionInHemisphere(normal, rng));
+
+    pathSegment.color *= m.color;
+    pathSegment.ray.origin = newOrigin;
+    pathSegment.ray.direction = newDirection;
+    if (pathSegment.remainingBounces >= 1)
+      pathSegment.remainingBounces--;
 
     // TODO: implement this.
     // A basic implementation of pure-diffuse shading will just call the

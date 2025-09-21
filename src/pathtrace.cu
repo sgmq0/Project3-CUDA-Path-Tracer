@@ -88,7 +88,6 @@ static Material* dev_materials = NULL;
 static PathSegment* dev_paths = NULL;
 static ShadeableIntersection* dev_intersections = NULL;
 
-int MAX_DEPTH = 10;
 // TODO: static variables for device memory, any extra info you need, etc
 // ...
 
@@ -292,17 +291,16 @@ __global__ void shadeMaterial(
       // If the material indicates that the object was a light, "light" the ray
       if (material.emittance > 0.0f) {
         pathSegments[idx].color *= (materialColor * material.emittance);
+        //pathSegments[idx].remainingBounces = 0;
       }
       // Otherwise, sample the bsdf
       else {
         //sample a new ray
-        Ray ray = pathSegments[idx].ray;
-        glm::vec3 new_int = ray.origin + ray.direction * intersection.t;
-        scatterRay(pathSegments[idx], new_int, intersection.surfaceNormal, material, rng);
-
-        //float lightTerm = glm::dot(intersection.surfaceNormal, glm::vec3(0.0f, 1.0f, 0.0f));
-        //pathSegments[idx].color *= (materialColor * lightTerm) * 0.3f + ((1.0f - intersection.t * 0.02f) * materialColor) * 0.7f;
-        //pathSegments[idx].color *= u01(rng); // apply some noise because why not
+        //calculate intersect
+        glm::vec3 intersect = pathSegments[idx].ray.origin + glm::normalize(pathSegments[idx].ray.direction) * (intersection.t - EPSILON);
+        
+        // do bsdf stuff
+        scatterRay(pathSegments[idx], intersect, intersection.surfaceNormal, material, rng);
       }
 
       // If there was no intersection, color the ray black.
@@ -311,7 +309,7 @@ __global__ void shadeMaterial(
       // This can be useful for post-processing and image compositing.
     }
     else {
-        pathSegments->remainingBounces = 0;
+      pathSegments[idx].remainingBounces = 0;
       pathSegments[idx].color = glm::vec3(0.0f);
     }
   }
@@ -329,13 +327,13 @@ __global__ void finalGather(int nPaths, glm::vec3* image, PathSegment* iteration
     }
 }
 
-struct is_successful_path
+struct is_failed_path
 {
     __host__ __device__
         bool operator()(const PathSegment& path)
     {
         // should fail if paths reach the max iteration
-        return path.remainingBounces != 0;
+        return path.remainingBounces <= 0;
     }
 };
 
@@ -435,17 +433,16 @@ void pathtrace(uchar4* pbo, int frame, int iter)
             dev_paths,
             dev_materials
         );
+        checkCUDAError("shade material");
         cudaDeviceSynchronize();
 
         // stream compact failed paths (paths that didn't intersect, or paths that reached the max iteration
-        //thrust::device_ptr<PathSegment> path_ptr(dev_paths);
-        //thrust::device_vector<PathSegment> path_vec(path_ptr, path_ptr + num_paths);
-        /*PathSegment* new_end = thrust::stable_partition(thrust::device, dev_paths, dev_paths + num_paths, is_successful_path());
+        PathSegment* new_end = thrust::remove_if(thrust::device, dev_paths, dev_path_end, is_failed_path());
         cudaDeviceSynchronize();
+        num_paths = (new_end - dev_paths);
+        dev_path_end = new_end;
 
-        num_paths = (new_end - dev_paths);*/
-
-        if (num_paths == 0 || depth >= traceDepth) 
+        if (num_paths == 0 || depth > traceDepth) 
             iterationComplete = true; // TODO: should be based off stream compaction results.
 
         if (guiData != NULL)
