@@ -21,9 +21,9 @@
 #include "interactions.h"
 
 #define ERRORCHECK 1
+#define SORT_MATERIALS 0
 
 #define INV_PI           0.31830988618379067
-#define SORT_MATERIALS 1
 
 #define FILENAME (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 #define checkCUDAError(msg) checkCUDAErrorFn(msg, FILENAME, __LINE__)
@@ -155,10 +155,18 @@ __global__ void generateRayFromCamera(Camera cam, int iter, int traceDepth, Path
         segment.ray.origin = cam.position;
         segment.color = glm::vec3(1.0f, 1.0f, 1.0f);
 
-        // TODO: implement antialiasing by jittering the ray
+        // implement antialiasing by jittering the ray
+        thrust::default_random_engine rng = makeSeededRandomEngine(iter, index, 0);
+        thrust::uniform_real_distribution<float> u01(-1, 1);
+        thrust::uniform_real_distribution<float> u02(-1, 1);
+
+        // anti aliasing
+        float rand_x = u01(rng);
+        float rand_y = u02(rng);
+
         segment.ray.direction = glm::normalize(cam.view
-            - cam.right * cam.pixelLength.x * ((float)x - (float)cam.resolution.x * 0.5f)
-            - cam.up * cam.pixelLength.y * ((float)y - (float)cam.resolution.y * 0.5f)
+            - cam.right * cam.pixelLength.x * ((float)x + rand_x - (float)cam.resolution.x * 0.5f)
+            - cam.up * cam.pixelLength.y * ((float)y + rand_y - (float)cam.resolution.y * 0.5f)
         );
 
         segment.pixelIndex = index;
@@ -313,19 +321,6 @@ __global__ void shadeMaterial(
       pathSegments[idx].remainingBounces = 0;
       pathSegments[idx].color = glm::vec3(0.0f);
     }
-  }
-}
-
-__global__ void setMaterialID(
-  int num_paths,
-  ShadeableIntersection* shadeableIntersections,
-  PathSegment* pathSegments)
-{
-  int idx = blockIdx.x * blockDim.x + threadIdx.x;
-  if (idx < num_paths)
-  {
-    ShadeableIntersection intersection = shadeableIntersections[idx];
-    pathSegments[idx].materialId = intersection.materialId;
   }
 }
 
