@@ -23,6 +23,7 @@
 #define ERRORCHECK 1
 
 #define INV_PI           0.31830988618379067
+#define SORT_MATERIALS 1
 
 #define FILENAME (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 #define checkCUDAError(msg) checkCUDAErrorFn(msg, FILENAME, __LINE__)
@@ -315,6 +316,19 @@ __global__ void shadeMaterial(
   }
 }
 
+__global__ void setMaterialID(
+  int num_paths,
+  ShadeableIntersection* shadeableIntersections,
+  PathSegment* pathSegments)
+{
+  int idx = blockIdx.x * blockDim.x + threadIdx.x;
+  if (idx < num_paths)
+  {
+    ShadeableIntersection intersection = shadeableIntersections[idx];
+    pathSegments[idx].materialId = intersection.materialId;
+  }
+}
+
 // Add the current iteration's output to the overall image
 __global__ void finalGather(int nPaths, glm::vec3* image, PathSegment* iterationPaths)
 {
@@ -335,6 +349,14 @@ struct is_successful_path
         // should fail if paths reach the max iteration
         return path.remainingBounces > 0;
     }
+};
+
+struct material_sort
+{
+  __host__ __device__
+    bool operator() (const ShadeableIntersection& intA, const ShadeableIntersection& intB) {
+    return intA.materialId < intB.materialId;
+  }
 };
 
 /**
@@ -427,6 +449,10 @@ void pathtrace(uchar4* pbo, int frame, int iter)
         // TODO: compare between directly shading the path segments and shading
         // path segments that have been reshuffled to be contiguous in memory.
 
+#if SORT_MATERIALS
+        thrust::sort_by_key(thrust::device, dev_intersections, dev_intersections + num_paths, dev_paths, material_sort());
+#endif
+
         shadeMaterial <<<numblocksPathSegmentTracing, blockSize1d>>>(
             iter,
             num_paths,
@@ -438,7 +464,7 @@ void pathtrace(uchar4* pbo, int frame, int iter)
         cudaDeviceSynchronize();
 
         // stream compact failed paths (paths that didn't intersect, or paths that reached the max iteration
-        PathSegment* new_end = thrust::stable_partition(thrust::device, dev_paths, dev_path_end, is_successful_path());
+        PathSegment* new_end = thrust::stable_partition(thrust::device, dev_paths, dev_paths+num_paths, is_successful_path());
         cudaDeviceSynchronize();
         num_paths = new_end - dev_paths;
         dev_path_end = new_end;
