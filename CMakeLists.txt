@@ -93,20 +93,29 @@ set(imgui_sources
     src/ImGui/imgui_widgets.cpp
 )
 
+set(tiny_gltf
+    src/tiny_gltf/tiny_gltf.h
+    src/tiny_gltf/stb_image.h
+    src/tiny_gltf/stb_image_write.h
+    src/tiny_gltf/json.hpp
+)
+
 list(SORT headers)
 list(SORT sources)
 list(SORT imgui_headers)
 list(SORT imgui_sources)
+list(SORT tiny_gltf)
 
 source_group("Headers" FILES ${headers})
 source_group("Sources" FILES ${sources})
 source_group("ImGui\\Headers" FILES ${imgui_headers})
 source_group("ImGui\\Sources" FILES ${imgui_sources})
+source_group("TinyGLTF" FILES ${tiny_gltf})
 
 #add_subdirectory(src/ImGui)
 #add_subdirectory(stream_compaction)  # TODO: uncomment if using your stream compaction
 
-add_executable(${CMAKE_PROJECT_NAME} ${sources} ${headers} ${imgui_sources} ${imgui_headers})
+add_executable(${CMAKE_PROJECT_NAME} ${sources} ${headers} ${imgui_sources} ${imgui_headers} ${tiny_gltf})
 target_link_libraries(${CMAKE_PROJECT_NAME}
     ${GL_LIBRARIES}
     #stream_compaction  # TODO: uncomment if using your stream compaction
