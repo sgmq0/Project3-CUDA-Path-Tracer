@@ -135,10 +135,12 @@ __host__ __device__ void scatterRay(
       float cosTheta = glm::dot(normal, pathSegment.ray.direction);
       float ior = 1.55f;
       float eta = (cosTheta > 0) ? (ior / 1.0f) : (1.0f / ior);
-      glm::vec3 refractDirection = glm::normalize(glm::refract(pathSegment.ray.direction, normal, eta));
+
+      glm::vec3 N = (cosTheta > 0) ? -normal : normal;
+      glm::vec3 refractDirection = glm::normalize(glm::refract(pathSegment.ray.direction, N, eta));
 
       newDirection = refractDirection;
-      newOrigin = intersect - EPSILON * normal;
+      newOrigin = intersect + EPSILON * newDirection;
       pathSegment.color *= m.color;
     }
 

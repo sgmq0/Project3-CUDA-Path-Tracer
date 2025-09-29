@@ -43,7 +43,7 @@
             "TYPE": "Reflective",
             "RGB":[0.98, 0.35, 0.98]
         },
-        "transmissive_yellow":
+        "transmissive":
         {
             "TYPE": "Transmissive",
             "RGB":[0.98, 0.98, 0.98],
@@ -93,7 +93,7 @@
         },
         {
             "TYPE":"cube",
-            "MATERIAL":"reflective_red",
+            "MATERIAL":"diffuse_red",
             "TRANS":[-5.0,5.0,0.0],
             "ROTAT":[0.0,0.0,0.0],
             "SCALE":[0.01,10.0,10.0]
@@ -107,22 +107,8 @@
         },
         {
             "TYPE":"sphere",
-            "MATERIAL":"reflective_magenta",
-            "TRANS":[-2.0,3.0,-1.0],
-            "ROTAT":[0.0,0.0,0.0],
-            "SCALE":[4.0,4.0,4.0]
-        },
-        {
-            "TYPE":"sphere",
-            "MATERIAL":"diffuse_cyan",
-            "TRANS":[1.0,6.0,-3.0],
-            "ROTAT":[0.0,0.0,0.0],
-            "SCALE":[4.0,4.0,4.0]
-        },
-        {
-            "TYPE":"sphere",
-            "MATERIAL":"transmissive_yellow",
-            "TRANS":[2.0,2.0,2.0],
+            "MATERIAL":"transmissive",
+            "TRANS":[0.0,5.0,-1.0],
             "ROTAT":[0.0,0.0,0.0],
             "SCALE":[4.0,4.0,4.0]
         }

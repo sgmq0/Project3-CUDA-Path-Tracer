@@ -306,7 +306,7 @@ __global__ void shadeMaterial(
       else {
         //sample a new ray
         //calculate intersect
-        glm::vec3 intersect = pathSegments[idx].ray.origin + glm::normalize(pathSegments[idx].ray.direction) * (intersection.t - EPSILON);
+        glm::vec3 intersect = pathSegments[idx].ray.origin + glm::normalize(pathSegments[idx].ray.direction) * intersection.t;
         
         // do bsdf stuff
         scatterRay(pathSegments[idx], intersect, intersection.surfaceNormal, material, rng);
