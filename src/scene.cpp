@@ -67,6 +67,14 @@ void Scene::loadFromJSON(const std::string& jsonName)
         {
             newGeom.type = CUBE;
         }
+        else if (type == "mesh")
+        {
+            std::string filename = "test";
+
+			LoadGLTF(filename);
+
+            newGeom.type = MESH;
+		}
         else
         {
             newGeom.type = SPHERE;

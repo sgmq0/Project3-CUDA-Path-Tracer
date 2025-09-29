@@ -1,6 +1,7 @@
 #pragma once
 
 #include "sceneStructs.h"
+#include "gltfLoader.h"
 #include <vector>
 
 class Scene
