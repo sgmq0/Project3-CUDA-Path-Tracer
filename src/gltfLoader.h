@@ -3,8 +3,7 @@
 #ifndef GLTF_LOADER_H_
 #define GLTF_LOADER_H_
 
-#include <string>
-#include <vector>
+#include <tiny_gltf.h>
 
 bool LoadGLTF(const std::string& filename);
 

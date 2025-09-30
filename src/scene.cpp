@@ -69,7 +69,7 @@ void Scene::loadFromJSON(const std::string& jsonName)
         }
         else if (type == "mesh")
         {
-            std::string filename = "test";
+            std::string filename = "C:\\Users\\FengR\\Documents\\School\\CIS 5650\\Project3-CUDA-Path-Tracer\\DragonAttenuation.glb";
 
 			LoadGLTF(filename);
 
