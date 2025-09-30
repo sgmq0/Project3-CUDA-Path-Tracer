@@ -192,7 +192,8 @@ __global__ void computeIntersections(
     Geom* geoms,
     int geoms_size,
     ShadeableIntersection* intersections,
-    Triangle* triangles)
+    Triangle* triangles,
+    int numTriangles)
 {
     int path_index = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -226,8 +227,9 @@ __global__ void computeIntersections(
             }
             else if (geom.type == MESH)
             {
-				t = meshIntersectionTest(geom, pathSegment.ray, tmp_intersect, tmp_normal, outside);
+				t = meshIntersectionTest(geom, pathSegment.ray, tmp_intersect, tmp_normal, outside, triangles, numTriangles);
             }
+
             // TODO: add more intersection tests here... triangle? metaball? CSG?
 
             // Compute the minimum t from the intersection tests to determine what
@@ -423,6 +425,7 @@ void pathtrace(uchar4* pbo, int frame, int iter)
     PathSegment* dev_path_end = dev_paths + pixelcount;
     int num_paths = dev_path_end - dev_paths;
     int num_paths_orig = num_paths;
+	int num_triangles = hst_scene->numTriangles;
 
     // --- PathSegment Tracing Stage ---
     // Shoot ray into scene, bounce between objects, push shading chunks
@@ -442,7 +445,8 @@ void pathtrace(uchar4* pbo, int frame, int iter)
             dev_geoms,
             hst_scene->geoms.size(),
             dev_intersections,
-            dev_triangles
+            dev_triangles,
+            num_triangles
         );
         checkCUDAError("trace one bounce");
         cudaDeviceSynchronize();

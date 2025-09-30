@@ -113,11 +113,52 @@ __host__ __device__ float sphereIntersectionTest(
 }
 
 __host__ __device__ float meshIntersectionTest(
-    Geom sphere,
+    Geom mesh,
     Ray r,
     glm::vec3& intersectionPoint,
     glm::vec3& normal,
-    bool& outside)
+    bool& outside, 
+    Triangle* triangles,
+    int numTriangles)
 {
-    return 0;
+    float t = INFINITY;
+    Triangle hitTri = triangles[0];
+
+    glm::vec3 ro = multiplyMV(mesh.inverseTransform, glm::vec4(r.origin, 1.0f));
+    glm::vec3 rd = glm::normalize(multiplyMV(mesh.inverseTransform, glm::vec4(r.direction, 0.0f)));
+
+    for (int i = 0; i < numTriangles; ++i) {
+        Triangle tri = triangles[i];
+
+        glm::vec3 baryPosition;
+        bool hit = glm::intersectRayTriangle(ro, rd,
+            tri.v0, tri.v1, tri.v2,
+            baryPosition);
+
+        float d = glm::length(baryPosition - r.origin);
+
+        if (hit && d < t) {
+            t = d;
+            hitTri = tri;
+        }
+    }
+
+    if (t < INFINITY) {
+        // Calculate flat normal in object space
+        glm::vec3 edge1 = hitTri.v1 - hitTri.v0;
+        glm::vec3 edge2 = hitTri.v2 - hitTri.v0;
+        glm::vec3 objectNormal = glm::normalize(glm::cross(edge1, edge2));
+
+        // calculate intersection 
+        intersectionPoint = ro + t * rd;
+
+        glm::vec3 worldNormal = glm::normalize(glm::vec3(
+            glm::transpose(glm::inverse(mesh.transform)) * glm::vec4(objectNormal, 0.0f)));
+
+        normal = worldNormal;
+
+        return glm::length(intersectionPoint - r.origin);
+    }
+
+    return -1;
 }
