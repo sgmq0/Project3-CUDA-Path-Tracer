@@ -86,3 +86,7 @@ struct ShadeableIntersection
   glm::vec3 surfaceNormal;
   int materialId;
 };
+
+struct Triangle {
+    glm::vec3 v0, v1, v2;
+};

@@ -4,7 +4,9 @@
 #define GLTF_LOADER_H_
 
 #include <tiny_gltf.h>
+#include "sceneStructs.h"
+#include "glm/glm.hpp"
 
-bool LoadGLTF(const std::string& filename);
+bool LoadGLTF(const std::string& filename, std::vector<Triangle>& triangles);
 
 #endif

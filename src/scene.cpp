@@ -69,9 +69,10 @@ void Scene::loadFromJSON(const std::string& jsonName)
         }
         else if (type == "mesh")
         {
-            std::string filename = "C:\\Users\\FengR\\Documents\\School\\CIS 5650\\Project3-CUDA-Path-Tracer\\DragonAttenuation.glb";
+            //std::string filename = "C:\\Users\\FengR\\Documents\\School\\CIS 5650\\Project3-CUDA-Path-Tracer\\DragonAttenuation.glb";
+            std::string filename = "C:\\Users\\Rachel\\Documents\\School\\CIS5650\\Project3-CUDA-Path-Tracer\\Box.glb";
 
-			LoadGLTF(filename);
+		    LoadGLTF(filename, triangles);
 
             newGeom.type = MESH;
 		}
