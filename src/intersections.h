@@ -1,6 +1,7 @@
 #pragma once
 
 #include "sceneStructs.h"
+#include "utilities.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtx/intersect.hpp>

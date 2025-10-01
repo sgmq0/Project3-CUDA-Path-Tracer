@@ -16,5 +16,5 @@ public:
     RenderState state;
 
     std::vector<Triangle> triangles;
-	int numTriangles;
+    int numTriangles;
 };

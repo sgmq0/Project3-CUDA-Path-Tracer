@@ -112,6 +112,35 @@ __host__ __device__ float sphereIntersectionTest(
     return glm::length(r.origin - intersectionPoint);
 }
 
+__host__ __device__
+bool intersectRayTriangleMT(
+    const glm::vec3& orig, const glm::vec3& dir,
+    const glm::vec3& v0, const glm::vec3& v1, const glm::vec3& v2,
+    float& t, float& u, float& v)
+{
+    glm::vec3 v0v1 = v1 - v0;
+    glm::vec3 v0v2 = v2 - v0;
+    glm::vec3 pvec = glm::cross(dir, v0v2);
+    float det = glm::dot(v0v1, pvec);
+
+    if (det < EPSILON) return false;
+    if (fabs(det) < EPSILON) return false;
+
+    float invDet = 1.0f / det;
+    
+    glm::vec3 tvec = orig - v0;
+    u = invDet * glm::dot(tvec, pvec);
+    if (u < 0.0f || u > 1.0f) return false;
+
+    glm::vec3 qvec = glm::cross(tvec, v0v1);
+    v = invDet * glm::dot(dir, qvec);
+    if (v < 0.0f || u + v > 1.0f) return false;
+
+    t = invDet * glm::dot(v0v2, qvec);
+
+    return t > EPSILON;
+}
+
 __host__ __device__ float meshIntersectionTest(
     Geom mesh,
     Ray r,
@@ -127,18 +156,13 @@ __host__ __device__ float meshIntersectionTest(
     glm::vec3 ro = multiplyMV(mesh.inverseTransform, glm::vec4(r.origin, 1.0f));
     glm::vec3 rd = glm::normalize(multiplyMV(mesh.inverseTransform, glm::vec4(r.direction, 0.0f)));
 
-    for (int i = 0; i < numTriangles; ++i) {
+    for (int i = mesh.startIdx; i < mesh.endIdx; ++i) {
         Triangle tri = triangles[i];
+        float tTemp, u, v;
+        bool hit = intersectRayTriangleMT(ro, rd, tri.v0, tri.v1, tri.v2, tTemp, u, v);
 
-        glm::vec3 baryPosition;
-        bool hit = glm::intersectRayTriangle(ro, rd,
-            tri.v0, tri.v1, tri.v2,
-            baryPosition);
-
-        float d = glm::length(baryPosition - r.origin);
-
-        if (hit && d < t) {
-            t = d;
+        if (hit && tTemp < t) {
+            t = tTemp;
             hitTri = tri;
         }
     }
@@ -157,7 +181,14 @@ __host__ __device__ float meshIntersectionTest(
 
         normal = worldNormal;
 
-        return glm::length(intersectionPoint - r.origin);
+        outside = glm::dot(rd, objectNormal) < 0.0f;
+        if (!outside) {
+            worldNormal = -worldNormal;
+        }
+
+        // world space distance
+        glm::vec3 worldIntersection = multiplyMV(mesh.transform, glm::vec4(intersectionPoint, 1.0f));
+        return glm::length(worldIntersection - r.origin);
     }
 
     return -1;

@@ -425,7 +425,7 @@ void pathtrace(uchar4* pbo, int frame, int iter)
     PathSegment* dev_path_end = dev_paths + pixelcount;
     int num_paths = dev_path_end - dev_paths;
     int num_paths_orig = num_paths;
-	int num_triangles = hst_scene->numTriangles;
+    int num_triangles = hst_scene->numTriangles;
 
     // --- PathSegment Tracing Stage ---
     // Shoot ray into scene, bounce between objects, push shading chunks

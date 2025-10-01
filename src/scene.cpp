@@ -71,9 +71,14 @@ void Scene::loadFromJSON(const std::string& jsonName)
         {
             std::string file = p["FILENAME"];
 
-		    LoadGLTF(file, triangles, numTriangles);
+            int start;
+            int end;
+
+		    LoadGLTF(file, triangles, numTriangles, start, end);
 
             newGeom.type = MESH;
+            newGeom.startIdx = start;
+            newGeom.endIdx = end;
         }
         else
         {

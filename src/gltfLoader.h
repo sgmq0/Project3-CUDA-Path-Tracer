@@ -7,6 +7,6 @@
 #include "sceneStructs.h"
 #include "glm/glm.hpp"
 
-bool LoadGLTF(const std::string& filename, std::vector<Triangle>& triangles, int& numTriangles);
+bool LoadGLTF(const std::string& filename, std::vector<Triangle>& triangles, int& numTriangles, int& start, int& end);
 
 #endif

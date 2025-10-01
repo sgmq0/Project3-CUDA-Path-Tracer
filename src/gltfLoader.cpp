@@ -9,7 +9,7 @@
 
 using namespace tinygltf;
 
-bool LoadGLTF(const std::string& filename, std::vector<Triangle>& triangles, int& numTriangles) {
+bool LoadGLTF(const std::string& filename, std::vector<Triangle>& triangles, int& numTriangles, int& start, int& end) {
     tinygltf::Model model;
     tinygltf::TinyGLTF loader;
     std::string err;
@@ -53,6 +53,8 @@ bool LoadGLTF(const std::string& filename, std::vector<Triangle>& triangles, int
     << model.cameras.size() << " cameras\n"
     << model.scenes.size() << " scenes\n"
     << model.lights.size() << " lights\n";
+
+    start = triangles.size();
 
     for (const auto& gltfMesh : model.meshes) {
         std::cout << "Current mesh has " << gltfMesh.primitives.size() << " primitives:\n";
@@ -138,9 +140,11 @@ bool LoadGLTF(const std::string& filename, std::vector<Triangle>& triangles, int
             }
 
             std::cout << "Loaded " << (indices.size() / 3) << " triangles.\n";
-			numTriangles = triangles.size();
         }
     }
+
+    end = triangles.size();
+    numTriangles = triangles.size();
 
     return true;
 
