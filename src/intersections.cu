@@ -193,3 +193,22 @@ __host__ __device__ float meshIntersectionTest(
 
     return -1;
 }
+
+__host__ __device__ bool bboxIntersectionTest(Geom mesh, Ray r) {
+    float tmin = 0.0, tmax = INFINITY;
+
+    glm::vec3 ro = multiplyMV(mesh.inverseTransform, glm::vec4(r.origin, 1.0f));
+    glm::vec3 rd = glm::normalize(multiplyMV(mesh.inverseTransform, glm::vec4(r.direction, 0.0f)));
+
+    glm::vec3 dirInv = glm::vec3(1.0) / rd;
+
+    for (int i = 0; i < 3; i++) {
+        float t1 = (mesh.bboxMin[i] - ro[i]) * dirInv[i];
+        float t2 = (mesh.bboxMax[i] - ro[i]) * dirInv[i];
+
+        tmin = glm::max(tmin, glm::min(t1, t2));
+        tmax = glm::min(tmax, glm::max(t1, t2));
+    }
+
+    return tmin < tmax;
+}

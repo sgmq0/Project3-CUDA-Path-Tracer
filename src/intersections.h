@@ -82,3 +82,5 @@ __host__ __device__ float meshIntersectionTest(
     Triangle* triangles,
     int numTriangles
 );
+
+__host__ __device__ bool bboxIntersectionTest(Geom mesh, Ray r);

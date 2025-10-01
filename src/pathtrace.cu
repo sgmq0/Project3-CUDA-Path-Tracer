@@ -22,6 +22,7 @@
 
 #define ERRORCHECK 1
 #define SORT_MATERIALS 0
+#define BOUNDING_VOLUME_CULLING 1
 
 #define INV_PI           0.31830988618379067
 
@@ -228,8 +229,15 @@ __global__ void computeIntersections(
             else if (geom.type == MESH)
             {
                 // do bbox intersection here
+                bool hit = true;
 
-				t = meshIntersectionTest(geom, pathSegment.ray, tmp_intersect, tmp_normal, outside, triangles, numTriangles);
+                #if BOUNDING_VOLUME_CULLING
+                hit = bboxIntersectionTest(geom, pathSegment.ray);
+                #endif
+
+                if (hit) {
+                    t = meshIntersectionTest(geom, pathSegment.ray, tmp_intersect, tmp_normal, outside, triangles, numTriangles);
+                }
             }
 
             // TODO: add more intersection tests here... triangle? metaball? CSG?
