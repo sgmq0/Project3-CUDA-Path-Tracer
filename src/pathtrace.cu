@@ -227,6 +227,8 @@ __global__ void computeIntersections(
             }
             else if (geom.type == MESH)
             {
+                // do bbox intersection here
+
 				t = meshIntersectionTest(geom, pathSegment.ray, tmp_intersect, tmp_normal, outside, triangles, numTriangles);
             }
 

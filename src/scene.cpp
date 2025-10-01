@@ -71,14 +71,20 @@ void Scene::loadFromJSON(const std::string& jsonName)
         {
             std::string file = p["FILENAME"];
 
+            //LoadGLTF(file, triangles, numTriangles);
+
             int start;
             int end;
+            glm::vec3 bboxMin;
+            glm::vec3 bboxMax;
 
-		    LoadGLTF(file, triangles, numTriangles, start, end);
+		    LoadGLTF(file, triangles, numTriangles, start, end, bboxMin, bboxMax);
 
             newGeom.type = MESH;
             newGeom.startIdx = start;
             newGeom.endIdx = end;
+            newGeom.bboxMin = bboxMin;
+            newGeom.bboxMax = bboxMax;
         }
         else
         {

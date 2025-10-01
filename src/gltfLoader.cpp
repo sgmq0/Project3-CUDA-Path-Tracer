@@ -9,7 +9,8 @@
 
 using namespace tinygltf;
 
-bool LoadGLTF(const std::string& filename, std::vector<Triangle>& triangles, int& numTriangles, int& start, int& end) {
+bool LoadGLTF(const std::string& filename, std::vector<Triangle>& triangles, int& numTriangles, int& start, int& end,
+    glm::vec3& min, glm::vec3& max) {
     tinygltf::Model model;
     tinygltf::TinyGLTF loader;
     std::string err;
@@ -55,6 +56,9 @@ bool LoadGLTF(const std::string& filename, std::vector<Triangle>& triangles, int
     << model.lights.size() << " lights\n";
 
     start = triangles.size();
+
+    glm::vec3 bboxMin = glm::vec3(INFINITY, INFINITY, INFINITY);
+    glm::vec3 bboxMax = glm::vec3(-INFINITY, -INFINITY, -INFINITY);
 
     for (const auto& gltfMesh : model.meshes) {
         std::cout << "Current mesh has " << gltfMesh.primitives.size() << " primitives:\n";
@@ -139,12 +143,28 @@ bool LoadGLTF(const std::string& filename, std::vector<Triangle>& triangles, int
                 });
             }
 
+            for (glm::vec3 p : positions) {
+                if (p.x < bboxMin.x) bboxMin.x = p.x;
+                if (p.y < bboxMin.y) bboxMin.y = p.y;
+                if (p.z < bboxMin.z) bboxMin.z = p.z;
+
+                if (p.x > bboxMax.x) bboxMax.x = p.x;
+                if (p.y > bboxMax.y) bboxMax.y = p.y;
+                if (p.z > bboxMax.z) bboxMax.z = p.z;
+            }
+
+            std::cout << "Min Bounds: (" << bboxMin.x << ", " << bboxMin.y << ", " << bboxMin.z << ")\n";
+            std::cout << "Max Bounds: (" << bboxMax.x << ", " << bboxMax.y << ", " << bboxMax.z << ")\n";
+
             std::cout << "Loaded " << (indices.size() / 3) << " triangles.\n";
         }
     }
 
     end = triangles.size();
     numTriangles = triangles.size();
+
+    min = bboxMin;
+    max = bboxMax;
 
     return true;
 

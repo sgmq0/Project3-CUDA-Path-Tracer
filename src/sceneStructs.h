@@ -36,6 +36,8 @@ struct Geom
     // this stuff used for meshes
     int startIdx;
     int endIdx;
+    glm::vec3 bboxMin;
+    glm::vec3 bboxMax;
 };
 
 struct Material
