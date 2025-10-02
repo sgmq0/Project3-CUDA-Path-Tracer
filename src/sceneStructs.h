@@ -35,7 +35,7 @@ struct Geom
     
     // this stuff used for meshes
     int startIdx;
-    int endIdx;
+    int numTriangles;
     glm::vec3 bboxMin;
     glm::vec3 bboxMax;
 };
@@ -95,4 +95,13 @@ struct ShadeableIntersection
 
 struct Triangle {
     glm::vec3 v0, v1, v2;
+    glm::vec3 centroid;
+};
+
+struct BVHNode
+{
+    glm::vec3 aabbMin, aabbMax;
+    int leftChild, rightChild;
+    bool isLeaf;
+    int firstPrim, primCount;
 };

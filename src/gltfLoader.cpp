@@ -9,7 +9,7 @@
 
 using namespace tinygltf;
 
-bool LoadGLTF(const std::string& filename, std::vector<Triangle>& triangles, int& numTriangles, int& start, int& end,
+bool LoadGLTF(const std::string& filename, std::vector<Triangle>& triangles, int& numTriangles, int& start, int& triangle_count,
     glm::vec3& min, glm::vec3& max) {
     tinygltf::Model model;
     tinygltf::TinyGLTF loader;
@@ -160,8 +160,8 @@ bool LoadGLTF(const std::string& filename, std::vector<Triangle>& triangles, int
         }
     }
 
-    end = triangles.size();
-    numTriangles = triangles.size();
+    triangle_count = triangles.size() - start;
+    numTriangles += triangles.size();
 
     min = bboxMin;
     max = bboxMax;

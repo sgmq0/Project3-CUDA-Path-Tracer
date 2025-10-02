@@ -156,8 +156,8 @@ __host__ __device__ float meshIntersectionTest(
     glm::vec3 ro = multiplyMV(mesh.inverseTransform, glm::vec4(r.origin, 1.0f));
     glm::vec3 rd = glm::normalize(multiplyMV(mesh.inverseTransform, glm::vec4(r.direction, 0.0f)));
 
-    for (int i = mesh.startIdx; i < mesh.endIdx; ++i) {
-        Triangle tri = triangles[i];
+    for (int i = 0; i < mesh.numTriangles; ++i) {
+        Triangle tri = triangles[i + mesh.startIdx];
         float tTemp, u, v;
         bool hit = intersectRayTriangleMT(ro, rd, tri.v0, tri.v1, tri.v2, tTemp, u, v);
 

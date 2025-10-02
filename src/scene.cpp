@@ -31,6 +31,25 @@ Scene::Scene(string filename)
     }
 }
 
+void Scene::updateNodeBounds(int nodeIdx) {
+	BVHNode& node = bvhNodes[nodeIdx];
+
+    node.aabbMin = glm::vec3(INFINITY, INFINITY, INFINITY);
+    node.aabbMax = glm::vec3(-INFINITY, -INFINITY, -INFINITY);
+
+    for (int i = 0; i < node.primCount; i++) {
+        Triangle leafTri = triangles[i + node.firstPrim];
+    }
+    
+}
+
+void Scene::buildBVH(int& nodeIdx) {
+    BVHNode& root = bvhNodes[nodeIdx];
+    root.leftChild = 0;
+    root.rightChild = 0;
+    updateNodeBounds(nodeIdx);
+}
+
 void Scene::loadFromJSON(const std::string& jsonName)
 {
     std::ifstream f(jsonName);
@@ -74,15 +93,15 @@ void Scene::loadFromJSON(const std::string& jsonName)
             //LoadGLTF(file, triangles, numTriangles);
 
             int start;
-            int end;
+            int triCount;
             glm::vec3 bboxMin;
             glm::vec3 bboxMax;
 
-		    LoadGLTF(file, triangles, numTriangles, start, end, bboxMin, bboxMax);
+		    LoadGLTF(file, triangles, numTriangles, start, triCount, bboxMin, bboxMax);
 
             newGeom.type = MESH;
             newGeom.startIdx = start;
-            newGeom.endIdx = end;
+            newGeom.numTriangles = triCount;
             newGeom.bboxMin = bboxMin;
             newGeom.bboxMax = bboxMax;
         }
@@ -104,6 +123,16 @@ void Scene::loadFromJSON(const std::string& jsonName)
 
         geoms.push_back(newGeom);
     }
+
+    // initialize bvh stuff
+	bvhNodes = std::vector<BVHNode>(2 * numTriangles - 1); 
+    int rootNodeIdx = 0; 
+    int nodesUsed = 1;
+
+    // build bvh once all tris are loaded
+    //buildBVH(rootNodeIdx);
+
+    //camera stuff (given in base code)
     const auto& cameraData = data["Camera"];
     Camera& camera = state.camera;
     RenderState& state = this->state;

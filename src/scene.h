@@ -8,6 +8,8 @@ class Scene
 {
 private:
     void loadFromJSON(const std::string& jsonName);
+    void buildBVH(int& nodeIdx);
+    void updateNodeBounds(int nodeIdx);
 public:
     Scene(std::string filename);
 
@@ -17,4 +19,5 @@ public:
 
     std::vector<Triangle> triangles;
     int numTriangles;
+    std::vector<BVHNode> bvhNodes;
 };
