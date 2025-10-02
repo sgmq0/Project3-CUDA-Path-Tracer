@@ -31,6 +31,48 @@ Scene::Scene(string filename)
     }
 }
 
+void Scene::subdivide(int nodeIdx) {
+    BVHNode& node = bvhNodes[nodeIdx];
+    if (node.primCount <= 2) return;
+    
+    // find longest axis and split position
+    glm::vec3 extent = node.aabbMax - node.aabbMin;
+    int axis = 0;
+    if (extent.y > extent.x) axis = 1;
+    if (extent.z > extent[axis]) axis = 2;
+    float splitPos = node.aabbMin[axis] + extent[axis] * 0.5f;
+
+    // split group in two halves
+    int i = node.firstPrim;
+    int j = i + node.primCount - 1;
+
+    while (i <= j)
+    {
+        if (triangles[i].centroid[axis] < splitPos)
+            i++;
+        else 
+            swap(triangles[i], triangles[j--]);
+    }
+
+    // create child nodes for each half
+    int leftCount = i - node.firstPrim;
+    if (leftCount == 0 || leftCount == node.primCount) return;
+
+    // create child nodes
+    int leftChildIdx = nodesUsed++;
+    int rightChildIdx = nodesUsed++;
+    node.leftChild = leftChildIdx;
+    bvhNodes[leftChildIdx].firstPrim = node.firstPrim;
+    bvhNodes[leftChildIdx].primCount = leftCount;
+    bvhNodes[rightChildIdx].firstPrim = i;
+    bvhNodes[rightChildIdx].primCount = node.primCount - leftCount;
+    node.primCount = 0;
+
+    // recurse and subdivide
+    subdivide(leftChildIdx);
+	subdivide(rightChildIdx);
+}
+
 void Scene::updateNodeBounds(int nodeIdx) {
 	BVHNode& node = bvhNodes[nodeIdx];
 
@@ -39,6 +81,13 @@ void Scene::updateNodeBounds(int nodeIdx) {
 
     for (int i = 0; i < node.primCount; i++) {
         Triangle leafTri = triangles[i + node.firstPrim];
+
+        node.aabbMin = min(node.aabbMin, leafTri.v0);
+        node.aabbMin = min(node.aabbMin, leafTri.v1);
+        node.aabbMin = min(node.aabbMin, leafTri.v2);
+        node.aabbMax = max(node.aabbMax, leafTri.v0);
+        node.aabbMax = max(node.aabbMax, leafTri.v1);
+        node.aabbMax = max(node.aabbMax, leafTri.v2);
     }
     
 }
@@ -47,7 +96,10 @@ void Scene::buildBVH(int& nodeIdx) {
     BVHNode& root = bvhNodes[nodeIdx];
     root.leftChild = 0;
     root.rightChild = 0;
+    root.firstPrim = 0;
+    root.primCount = numTriangles;
     updateNodeBounds(nodeIdx);
+    subdivide(nodeIdx);
 }
 
 void Scene::loadFromJSON(const std::string& jsonName)
@@ -56,6 +108,7 @@ void Scene::loadFromJSON(const std::string& jsonName)
     json data = json::parse(f);
     const auto& materialsData = data["Materials"];
     std::unordered_map<std::string, uint32_t> MatNameToID;
+    numTriangles = 0;
     for (const auto& item : materialsData.items())
     {
         const auto& name = item.key();
@@ -125,12 +178,19 @@ void Scene::loadFromJSON(const std::string& jsonName)
     }
 
     // initialize bvh stuff
-	bvhNodes = std::vector<BVHNode>(2 * numTriangles - 1); 
+	std::cout << "Total number of triangles: " << numTriangles << "\n";
+
+	// calculate centroids for all triangles
+    for (int i = 0; i < numTriangles; i++) {
+        triangles[i].centroid = (triangles[i].v0 + triangles[i].v1 + triangles[i].v2) / 3.0f;
+	}
+
+	bvhNodes = std::vector<BVHNode>(numTriangles * 2 - 1); 
     int rootNodeIdx = 0; 
-    int nodesUsed = 1;
+    nodesUsed = 1;
 
     // build bvh once all tris are loaded
-    //buildBVH(rootNodeIdx);
+    buildBVH(rootNodeIdx);
 
     //camera stuff (given in base code)
     const auto& cameraData = data["Camera"];

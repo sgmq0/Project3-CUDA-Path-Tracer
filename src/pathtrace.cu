@@ -90,6 +90,7 @@ static Material* dev_materials = NULL;
 static PathSegment* dev_paths = NULL;
 static ShadeableIntersection* dev_intersections = NULL;
 static Triangle* dev_triangles = NULL;
+static BVHNode* dev_bvhNodes = NULL;
 
 // TODO: static variables for device memory, any extra info you need, etc
 // ...
@@ -125,6 +126,10 @@ void pathtraceInit(Scene* scene)
     // initialize triangles
     cudaMalloc(&dev_triangles, scene->triangles.size() * sizeof(Triangle));
     cudaMemcpy(dev_triangles, scene->triangles.data(), scene->triangles.size() * sizeof(Triangle), cudaMemcpyHostToDevice);
+
+    // initialize bvh
+    cudaMalloc(&dev_bvhNodes, scene->bvhNodes.size() * sizeof(BVHNode));
+	cudaMemcpy(dev_bvhNodes, scene->bvhNodes.data(), scene->bvhNodes.size() * sizeof(BVHNode), cudaMemcpyHostToDevice);
 
     checkCUDAError("pathtraceInit");
 }
@@ -194,7 +199,8 @@ __global__ void computeIntersections(
     int geoms_size,
     ShadeableIntersection* intersections,
     Triangle* triangles,
-    int numTriangles)
+    int numTriangles,
+    BVHNode* bvhNodes)
 {
     int path_index = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -232,12 +238,14 @@ __global__ void computeIntersections(
                 bool hit = true;
 
                 #if BOUNDING_VOLUME_CULLING
-                hit = bboxIntersectionTest(geom, pathSegment.ray);
+                hit = bboxIntersectionTestMesh(geom, pathSegment.ray);
                 #endif
 
                 if (hit) {
                     t = meshIntersectionTest(geom, pathSegment.ray, tmp_intersect, tmp_normal, outside, triangles, numTriangles);
                 }
+
+                //t = bvhIntersectionTest(bvhNodes, triangles, pathSegment.ray, 0);
             }
 
             // TODO: add more intersection tests here... triangle? metaball? CSG?
@@ -456,7 +464,8 @@ void pathtrace(uchar4* pbo, int frame, int iter)
             hst_scene->geoms.size(),
             dev_intersections,
             dev_triangles,
-            num_triangles
+            num_triangles,
+            dev_bvhNodes
         );
         checkCUDAError("trace one bounce");
         cudaDeviceSynchronize();

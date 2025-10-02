@@ -155,13 +155,13 @@ bool LoadGLTF(const std::string& filename, std::vector<Triangle>& triangles, int
 
             std::cout << "Min Bounds: (" << bboxMin.x << ", " << bboxMin.y << ", " << bboxMin.z << ")\n";
             std::cout << "Max Bounds: (" << bboxMax.x << ", " << bboxMax.y << ", " << bboxMax.z << ")\n";
-
-            std::cout << "Loaded " << (indices.size() / 3) << " triangles.\n";
         }
     }
 
     triangle_count = triangles.size() - start;
-    numTriangles += triangles.size();
+    numTriangles += triangle_count;
+
+    std::cout << "Loaded " << (triangle_count) << " triangles.\n";
 
     min = bboxMin;
     max = bboxMax;

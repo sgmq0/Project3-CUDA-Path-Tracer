@@ -156,8 +156,8 @@ __host__ __device__ float meshIntersectionTest(
     glm::vec3 ro = multiplyMV(mesh.inverseTransform, glm::vec4(r.origin, 1.0f));
     glm::vec3 rd = glm::normalize(multiplyMV(mesh.inverseTransform, glm::vec4(r.direction, 0.0f)));
 
-    for (int i = 0; i < mesh.numTriangles; ++i) {
-        Triangle tri = triangles[i + mesh.startIdx];
+    for (int i = 0; i < numTriangles; ++i) {
+        Triangle tri = triangles[i];
         float tTemp, u, v;
         bool hit = intersectRayTriangleMT(ro, rd, tri.v0, tri.v1, tri.v2, tTemp, u, v);
 
@@ -194,7 +194,7 @@ __host__ __device__ float meshIntersectionTest(
     return -1;
 }
 
-__host__ __device__ bool bboxIntersectionTest(Geom mesh, Ray r) {
+__host__ __device__ bool bboxIntersectionTestMesh(Geom mesh, Ray r) {
     float tmin = 0.0, tmax = INFINITY;
 
     glm::vec3 ro = multiplyMV(mesh.inverseTransform, glm::vec4(r.origin, 1.0f));
@@ -211,4 +211,65 @@ __host__ __device__ bool bboxIntersectionTest(Geom mesh, Ray r) {
     }
 
     return tmin < tmax;
+}
+
+__host__ __device__ bool bboxIntersectionTest(Ray r, glm::vec3 bboxMin, glm::vec3 bboxMax) {
+    float tmin = 0.0, tmax = INFINITY;
+
+    glm::vec3 ro = r.origin;
+    glm::vec3 rd = r.direction;
+
+    glm::vec3 dirInv = glm::vec3(1.0) / rd;
+
+    for (int i = 0; i < 3; i++) {
+        float t1 = (bboxMin[i] - ro[i]) * dirInv[i];
+        float t2 = (bboxMax[i] - ro[i]) * dirInv[i];
+
+        tmin = glm::max(tmin, glm::min(t1, t2));
+        tmax = glm::min(tmax, glm::max(t1, t2));
+    }
+
+    return tmin < tmax;
+}
+
+__host__ __device__ bool isLeaf(BVHNode node) {
+    return node.primCount <= 2;
+}
+
+__host__ __device__ float bvhIntersectionTest(BVHNode* bvhNodes, Triangle* triangles, Ray r, int nodeIdx) {
+    BVHNode& node = bvhNodes[nodeIdx];
+
+    if (!bboxIntersectionTest(r, node.aabbMin, node.aabbMax)) return -1;
+
+    glm::vec3 ro = r.origin;
+    glm::vec3 rd = r.direction;
+
+    float t = INFINITY;
+
+    if (isLeaf(node))
+    {
+        for (int i = 0; i < node.primCount; i++) {
+            Triangle tri = triangles[node.firstPrim + i];
+            float tTemp, u, v;
+            bool hit = intersectRayTriangleMT(ro, rd, tri.v0, tri.v1, tri.v2, tTemp, u, v);
+
+            if (hit && tTemp < t) {
+                t = tTemp;
+            }
+        }
+
+        if (t < INFINITY) {
+            return t;
+		}
+
+    }
+    else
+    {
+		float t1 = bvhIntersectionTest(bvhNodes, triangles, r, node.leftChild);
+		if (t1 > 0 && t1 < INFINITY) return t1;
+		float t2 = bvhIntersectionTest(bvhNodes, triangles, r, node.leftChild + 1);
+		if (t2 > 0 && t2 < INFINITY) return t2;
+    }
+
+    return -1;
 }

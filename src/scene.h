@@ -10,6 +10,7 @@ private:
     void loadFromJSON(const std::string& jsonName);
     void buildBVH(int& nodeIdx);
     void updateNodeBounds(int nodeIdx);
+    void subdivide(int nodeIdx);
 public:
     Scene(std::string filename);
 
@@ -17,7 +18,9 @@ public:
     std::vector<Material> materials;
     RenderState state;
 
+    // bvh stuff
     std::vector<Triangle> triangles;
     int numTriangles;
     std::vector<BVHNode> bvhNodes;
+    int nodesUsed;
 };

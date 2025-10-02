@@ -83,4 +83,8 @@ __host__ __device__ float meshIntersectionTest(
     int numTriangles
 );
 
-__host__ __device__ bool bboxIntersectionTest(Geom mesh, Ray r);
+__host__ __device__ bool bboxIntersectionTestMesh(Geom mesh, Ray r);
+
+__host__ __device__ bool bboxIntersectionTest(Ray r, glm::vec3 bboxMin, glm::vec3 bboxMax);
+
+__host__ __device__ float bvhIntersectionTest(BVHNode* bvhNodes, Triangle* triangles, Ray r, int nodeIdx);
