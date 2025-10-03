@@ -214,22 +214,31 @@ __host__ __device__ bool bboxIntersectionTestMesh(Geom mesh, Ray r) {
 }
 
 __host__ __device__ bool bboxIntersectionTest(Ray r, glm::vec3 bboxMin, glm::vec3 bboxMax) {
-    float tmin = 0.0, tmax = INFINITY;
+    float t_min = -INFINITY;
+    float t_max = INFINITY;
 
-    glm::vec3 ro = r.origin;
     glm::vec3 rd = r.direction;
+    glm::vec3 ro = r.origin;
 
-    glm::vec3 dirInv = glm::vec3(1.0) / rd;
+    for (int i = 0; i < 3; ++i) {
+        float tlow = (bboxMin[i] - ro[i]) / rd[i];
+        float thigh = (bboxMax[i] - ro[i]) / rd[i];
 
-    for (int i = 0; i < 3; i++) {
-        float t1 = (bboxMin[i] - ro[i]) * dirInv[i];
-        float t2 = (bboxMax[i] - ro[i]) * dirInv[i];
+        if (tlow > thigh) {
+            float temp = tlow;
+            tlow = thigh;
+            thigh = temp;
+        }
 
-        tmin = glm::max(tmin, glm::min(t1, t2));
-        tmax = glm::min(tmax, glm::max(t1, t2));
+        t_min = glm::min(t_min, tlow);
+		t_max = glm::max(t_max, thigh);
+        
+        if (t_min > t_max) {
+            return false;
+        }
     }
 
-    return tmin < tmax;
+    return t_max >= t_min && t_max > 0.0f;
 }
 
 __host__ __device__ float bvhIntersectionTest(BVHNode* bvhNodes, Triangle* triangles, Ray r, int nodeIdx,

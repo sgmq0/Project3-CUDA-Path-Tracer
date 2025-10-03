@@ -85,7 +85,7 @@ bool LoadGLTF(const std::string& filename, std::vector<Triangle>& triangles, int
             // parse positions
             for (size_t i = 0; i < vertexCount; ++i) {
                 const float* pos = reinterpret_cast<const float*>(posDataPtr + i * 12); // 3 floats * 4 bytes
-                positions.emplace_back(pos[0] * 2.f, pos[1] * 2.f + 2.f, pos[2] * 2.f);
+                positions.emplace_back(pos[0] * .02f, pos[1] * .02f + 2.0f, pos[2] * .02f);
             }
 
             // load indices
