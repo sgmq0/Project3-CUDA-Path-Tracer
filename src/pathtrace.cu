@@ -235,7 +235,7 @@ __global__ void computeIntersections(
             else if (geom.type == MESH)
             {
                 // do bbox intersection here
-                bool hit = true;
+                /*bool hit = true;
 
                 #if BOUNDING_VOLUME_CULLING
                 hit = bboxIntersectionTestMesh(geom, pathSegment.ray);
@@ -243,9 +243,10 @@ __global__ void computeIntersections(
 
                 if (hit) {
                     t = meshIntersectionTest(geom, pathSegment.ray, tmp_intersect, tmp_normal, outside, triangles, numTriangles);
-                }
+                }*/
 
-                //t = bvhIntersectionTest(bvhNodes, triangles, pathSegment.ray, 0);
+                t = bvhIntersectionTest(bvhNodes, triangles, pathSegment.ray, 0);
+                //t = meshIntersectionTest(geom, pathSegment.ray, tmp_intersect, tmp_normal, outside, triangles, numTriangles);
             }
 
             // TODO: add more intersection tests here... triangle? metaball? CSG?

@@ -232,10 +232,6 @@ __host__ __device__ bool bboxIntersectionTest(Ray r, glm::vec3 bboxMin, glm::vec
     return tmin < tmax;
 }
 
-__host__ __device__ bool isLeaf(BVHNode node) {
-    return node.primCount <= 2;
-}
-
 __host__ __device__ float bvhIntersectionTest(BVHNode* bvhNodes, Triangle* triangles, Ray r, int nodeIdx) {
     BVHNode& node = bvhNodes[nodeIdx];
 
@@ -246,7 +242,7 @@ __host__ __device__ float bvhIntersectionTest(BVHNode* bvhNodes, Triangle* trian
 
     float t = INFINITY;
 
-    if (isLeaf(node))
+    if (node.isLeaf)
     {
         for (int i = 0; i < node.primCount; i++) {
             Triangle tri = triangles[node.firstPrim + i];
@@ -265,10 +261,18 @@ __host__ __device__ float bvhIntersectionTest(BVHNode* bvhNodes, Triangle* trian
     }
     else
     {
-		float t1 = bvhIntersectionTest(bvhNodes, triangles, r, node.leftChild);
-		if (t1 > 0 && t1 < INFINITY) return t1;
-		float t2 = bvhIntersectionTest(bvhNodes, triangles, r, node.leftChild + 1);
-		if (t2 > 0 && t2 < INFINITY) return t2;
+		float tLeft = bvhIntersectionTest(bvhNodes, triangles, r, node.leftChild);
+		float tRight = bvhIntersectionTest(bvhNodes, triangles, r, node.leftChild + 1);
+
+        if (tLeft >= 0 && tRight >= 0) {
+            return glm::min(tLeft, tRight);
+        }
+        else if (tLeft >= 0) {
+            return tLeft;
+        }
+        else if (tRight >= 0) {
+            return tRight;
+		}
     }
 
     return -1;

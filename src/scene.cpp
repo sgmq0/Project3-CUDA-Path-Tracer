@@ -33,14 +33,17 @@ Scene::Scene(string filename)
 
 void Scene::subdivide(int nodeIdx) {
     BVHNode& node = bvhNodes[nodeIdx];
-    if (node.primCount <= 2) return;
-    
+    if (node.primCount <= 2) {
+        node.isLeaf = true;
+        return;
+    }
+
     // find longest axis and split position
     glm::vec3 extent = node.aabbMax - node.aabbMin;
     int axis = 0;
     if (extent.y > extent.x) axis = 1;
     if (extent.z > extent[axis]) axis = 2;
-    float splitPos = node.aabbMin[axis] + extent[axis] * 0.5f;
+    float splitPos = (node.aabbMin[axis] + node.aabbMax[axis]) * 0.5f;
 
     // split group in two halves
     int i = node.firstPrim;
@@ -56,7 +59,10 @@ void Scene::subdivide(int nodeIdx) {
 
     // create child nodes for each half
     int leftCount = i - node.firstPrim;
-    if (leftCount == 0 || leftCount == node.primCount) return;
+    if (leftCount == 0 || leftCount == node.primCount) {
+		node.isLeaf = true;
+        return;
+    }
 
     // create child nodes
     int leftChildIdx = nodesUsed++;
@@ -67,6 +73,10 @@ void Scene::subdivide(int nodeIdx) {
     bvhNodes[rightChildIdx].firstPrim = i;
     bvhNodes[rightChildIdx].primCount = node.primCount - leftCount;
     node.primCount = 0;
+
+	// update bounds of each child
+    updateNodeBounds(leftChildIdx); 
+    updateNodeBounds(rightChildIdx);
 
     // recurse and subdivide
     subdivide(leftChildIdx);
@@ -191,6 +201,7 @@ void Scene::loadFromJSON(const std::string& jsonName)
 
     // build bvh once all tris are loaded
     buildBVH(rootNodeIdx);
+	std::cout << "BVH build complete. Total nodes used: " << nodesUsed << "\n";
 
     //camera stuff (given in base code)
     const auto& cameraData = data["Camera"];
