@@ -8,9 +8,9 @@ class Scene
 {
 private:
     void loadFromJSON(const std::string& jsonName);
-    void buildBVH(int& nodeIdx);
-    void updateNodeBounds(int nodeIdx);
-    void subdivide(int nodeIdx);
+    void buildBVH();
+    void updateNodeBounds(BVHNode& node);
+    void subdivide(BVHNode& node);
 public:
     Scene(std::string filename);
 

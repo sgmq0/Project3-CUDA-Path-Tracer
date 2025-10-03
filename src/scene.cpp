@@ -31,19 +31,28 @@ Scene::Scene(string filename)
     }
 }
 
-void Scene::subdivide(int nodeIdx) {
-    BVHNode& node = bvhNodes[nodeIdx];
-    if (node.primCount <= 2) {
+void Scene::subdivide(BVHNode& node) {
+
+    // leaf node
+    if (node.primCount <= 4) {
         node.isLeaf = true;
         return;
     }
 
-    // find longest axis and split position
-    glm::vec3 extent = node.aabbMax - node.aabbMin;
+    // find min and max centroid
+	glm::vec3 minCentroid = glm::vec3(INFINITY, INFINITY, INFINITY);
+	glm::vec3 maxCentroid = glm::vec3(-INFINITY, -INFINITY, -INFINITY);
+    for (int i = 0; i < node.primCount; i++) {
+        Triangle tri = triangles[i + node.firstPrim];
+        minCentroid = min(minCentroid, tri.centroid);
+        maxCentroid = max(maxCentroid, tri.centroid);
+	}
+    glm::vec3 extent = minCentroid - maxCentroid;
     int axis = 0;
     if (extent.y > extent.x) axis = 1;
     if (extent.z > extent[axis]) axis = 2;
-    float splitPos = (node.aabbMin[axis] + node.aabbMax[axis]) * 0.5f;
+
+    float splitPos = (minCentroid[axis] + maxCentroid[axis]) * 0.5f;
 
     // split group in two halves
     int i = node.firstPrim;
@@ -68,24 +77,35 @@ void Scene::subdivide(int nodeIdx) {
     int leftChildIdx = nodesUsed++;
     int rightChildIdx = nodesUsed++;
     node.leftChild = leftChildIdx;
-    bvhNodes[leftChildIdx].firstPrim = node.firstPrim;
-    bvhNodes[leftChildIdx].primCount = leftCount;
-    bvhNodes[rightChildIdx].firstPrim = i;
-    bvhNodes[rightChildIdx].primCount = node.primCount - leftCount;
-    node.primCount = 0;
+    node.rightChild = rightChildIdx;
+
+	BVHNode leftChild;
+    leftChild.leftChild = 0;
+	leftChild.rightChild = 0;
+    leftChild.firstPrim = node.firstPrim;
+	leftChild.primCount = leftCount;
+	leftChild.isLeaf = false;
+
+	BVHNode rightChild;
+	rightChild.leftChild = 0;
+	rightChild.rightChild = 0;
+	rightChild.firstPrim = i;
+	rightChild.primCount = node.primCount - leftCount;
+	rightChild.isLeaf = false;
+
+	bvhNodes.push_back(leftChild);
+	bvhNodes.push_back(rightChild);
 
 	// update bounds of each child
-    updateNodeBounds(leftChildIdx); 
-    updateNodeBounds(rightChildIdx);
+    updateNodeBounds(bvhNodes[leftChildIdx]); 
+    updateNodeBounds(bvhNodes[rightChildIdx]);
 
     // recurse and subdivide
-    subdivide(leftChildIdx);
-	subdivide(rightChildIdx);
+    subdivide(bvhNodes[leftChildIdx]);
+	subdivide(bvhNodes[rightChildIdx]);
 }
 
-void Scene::updateNodeBounds(int nodeIdx) {
-	BVHNode& node = bvhNodes[nodeIdx];
-
+void Scene::updateNodeBounds(BVHNode& node) {
     node.aabbMin = glm::vec3(INFINITY, INFINITY, INFINITY);
     node.aabbMax = glm::vec3(-INFINITY, -INFINITY, -INFINITY);
 
@@ -102,14 +122,17 @@ void Scene::updateNodeBounds(int nodeIdx) {
     
 }
 
-void Scene::buildBVH(int& nodeIdx) {
-    BVHNode& root = bvhNodes[nodeIdx];
-    root.leftChild = 0;
-    root.rightChild = 0;
-    root.firstPrim = 0;
-    root.primCount = numTriangles;
-    updateNodeBounds(nodeIdx);
-    subdivide(nodeIdx);
+void Scene::buildBVH() {
+    bvhNodes.push_back(BVHNode{});
+
+    int nodeIdx = (int)bvhNodes.size() - 1;
+
+	bvhNodes[nodeIdx].firstPrim = 0;
+	bvhNodes[nodeIdx].primCount = numTriangles;
+	bvhNodes[nodeIdx].isLeaf = false;
+
+    updateNodeBounds(bvhNodes[nodeIdx]);
+    subdivide(bvhNodes[nodeIdx]);
 }
 
 void Scene::loadFromJSON(const std::string& jsonName)
@@ -195,13 +218,17 @@ void Scene::loadFromJSON(const std::string& jsonName)
         triangles[i].centroid = (triangles[i].v0 + triangles[i].v1 + triangles[i].v2) / 3.0f;
 	}
 
-	bvhNodes = std::vector<BVHNode>(numTriangles * 2 - 1); 
-    int rootNodeIdx = 0; 
+    bvhNodes = std::vector<BVHNode>();
     nodesUsed = 1;
 
     // build bvh once all tris are loaded
-    buildBVH(rootNodeIdx);
+    buildBVH();
 	std::cout << "BVH build complete. Total nodes used: " << nodesUsed << "\n";
+
+    // print all centroids
+    //for (int i = 0; i < numTriangles; i++) {
+    //    std::cout << "Triangle " << i << " centroid: " << glm::to_string(triangles[i].centroid) << "\n";
+    //}
 
     //camera stuff (given in base code)
     const auto& cameraData = data["Camera"];

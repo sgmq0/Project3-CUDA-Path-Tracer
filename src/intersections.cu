@@ -210,7 +210,7 @@ __host__ __device__ bool bboxIntersectionTestMesh(Geom mesh, Ray r) {
         tmax = glm::min(tmax, glm::max(t1, t2));
     }
 
-    return tmin < tmax;
+    return tmin < tmax && tmax >= 0.0f;
 }
 
 __host__ __device__ bool bboxIntersectionTest(Ray r, glm::vec3 bboxMin, glm::vec3 bboxMax) {
@@ -233,47 +233,44 @@ __host__ __device__ bool bboxIntersectionTest(Ray r, glm::vec3 bboxMin, glm::vec
 }
 
 __host__ __device__ float bvhIntersectionTest(BVHNode* bvhNodes, Triangle* triangles, Ray r, int nodeIdx) {
-    BVHNode& node = bvhNodes[nodeIdx];
+    const int MAX_STACK_SIZE = 64;
+    int stack[MAX_STACK_SIZE];
+    int stackPtr = 0;
 
-    if (!bboxIntersectionTest(r, node.aabbMin, node.aabbMax)) return -1;
+    stack[stackPtr++] = nodeIdx;
 
-    glm::vec3 ro = r.origin;
-    glm::vec3 rd = r.direction;
+    float closestT = INFINITY;
 
-    float t = INFINITY;
+    while (stackPtr > 0) {
+        int nodeIdx = stack[--stackPtr];
+        BVHNode& node = bvhNodes[nodeIdx];
 
-    if (node.isLeaf)
-    {
-        for (int i = 0; i < node.primCount; i++) {
-            Triangle tri = triangles[node.firstPrim + i];
-            float tTemp, u, v;
-            bool hit = intersectRayTriangleMT(ro, rd, tri.v0, tri.v1, tri.v2, tTemp, u, v);
+        // test bbox
+        if (!bboxIntersectionTest(r, node.aabbMin, node.aabbMax)) {
+            continue;
+        }
 
-            if (hit && tTemp < t) {
-                t = tTemp;
+        if (node.isLeaf) {
+            // iterate through all triangles
+            for (int i = 0; i < node.primCount; i++) {
+                Triangle tri = triangles[node.firstPrim + i];
+                float tTemp, u, v;
+
+                if (intersectRayTriangleMT(r.origin, r.direction, tri.v0, tri.v1, tri.v2, tTemp, u, v)) {
+                    if (tTemp < closestT && tTemp > 0.0f) {
+                        closestT = tTemp;
+                    }
+                }
             }
         }
-
-        if (t < INFINITY) {
-            return t;
-		}
-
-    }
-    else
-    {
-		float tLeft = bvhIntersectionTest(bvhNodes, triangles, r, node.leftChild);
-		float tRight = bvhIntersectionTest(bvhNodes, triangles, r, node.leftChild + 1);
-
-        if (tLeft >= 0 && tRight >= 0) {
-            return glm::min(tLeft, tRight);
+        else {
+            // push to stack
+            if (stackPtr + 2 <= MAX_STACK_SIZE) {
+                stack[stackPtr++] = node.leftChild;
+                stack[stackPtr++] = node.rightChild;
+            }
         }
-        else if (tLeft >= 0) {
-            return tLeft;
-        }
-        else if (tRight >= 0) {
-            return tRight;
-		}
     }
 
-    return -1;
+    return (closestT < INFINITY) ? closestT : -1.0f;
 }
