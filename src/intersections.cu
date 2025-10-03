@@ -232,7 +232,8 @@ __host__ __device__ bool bboxIntersectionTest(Ray r, glm::vec3 bboxMin, glm::vec
     return tmin < tmax;
 }
 
-__host__ __device__ float bvhIntersectionTest(BVHNode* bvhNodes, Triangle* triangles, Ray r, int nodeIdx) {
+__host__ __device__ float bvhIntersectionTest(BVHNode* bvhNodes, Triangle* triangles, Ray r, int nodeIdx,
+    glm::vec3& intersectionPoint, glm::vec3& normal, bool outside) {
     const int MAX_STACK_SIZE = 64;
     int stack[MAX_STACK_SIZE];
     int stackPtr = 0;
@@ -240,6 +241,10 @@ __host__ __device__ float bvhIntersectionTest(BVHNode* bvhNodes, Triangle* trian
     stack[stackPtr++] = nodeIdx;
 
     float closestT = INFINITY;
+    Triangle hitTri;
+
+    glm::vec3 ro = r.origin;
+    glm::vec3 rd = r.direction;
 
     while (stackPtr > 0) {
         int nodeIdx = stack[--stackPtr];
@@ -259,6 +264,7 @@ __host__ __device__ float bvhIntersectionTest(BVHNode* bvhNodes, Triangle* trian
                 if (intersectRayTriangleMT(r.origin, r.direction, tri.v0, tri.v1, tri.v2, tTemp, u, v)) {
                     if (tTemp < closestT && tTemp > 0.0f) {
                         closestT = tTemp;
+                        hitTri = tri;
                     }
                 }
             }
@@ -272,5 +278,24 @@ __host__ __device__ float bvhIntersectionTest(BVHNode* bvhNodes, Triangle* trian
         }
     }
 
-    return (closestT < INFINITY) ? closestT : -1.0f;
+    if (closestT < INFINITY) {
+        // Calculate flat normal in object space
+        glm::vec3 edge1 = hitTri.v1 - hitTri.v0;
+        glm::vec3 edge2 = hitTri.v2 - hitTri.v0;
+        glm::vec3 objectNormal = glm::normalize(glm::cross(edge1, edge2));
+
+        // calculate intersection 
+        intersectionPoint = ro + closestT * rd;
+
+        outside = glm::dot(rd, objectNormal) < 0.0f;
+        if (!outside) {
+            objectNormal = -objectNormal;
+        }
+
+        // world space distance
+		normal = objectNormal;
+        return glm::length(intersectionPoint - r.origin);
+    }
+
+    return -1;
 }

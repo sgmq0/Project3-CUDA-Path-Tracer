@@ -245,7 +245,7 @@ __global__ void computeIntersections(
                     t = meshIntersectionTest(geom, pathSegment.ray, tmp_intersect, tmp_normal, outside, triangles, numTriangles);
                 }*/
 
-                t = bvhIntersectionTest(bvhNodes, triangles, pathSegment.ray, 0);
+                t = bvhIntersectionTest(bvhNodes, triangles, pathSegment.ray, 0, tmp_intersect, tmp_normal, outside);
                 //t = meshIntersectionTest(geom, pathSegment.ray, tmp_intersect, tmp_normal, outside, triangles, numTriangles);
             }
 
