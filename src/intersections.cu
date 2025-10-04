@@ -217,12 +217,14 @@ __host__ __device__ bool bboxIntersectionTest(Ray r, glm::vec3 bboxMin, glm::vec
     float t_min = -INFINITY;
     float t_max = INFINITY;
 
+    glm::vec3 invDir = 1.0f / r.direction;
+
     glm::vec3 rd = r.direction;
     glm::vec3 ro = r.origin;
 
     for (int i = 0; i < 3; ++i) {
-        float tlow = (bboxMin[i] - ro[i]) / rd[i];
-        float thigh = (bboxMax[i] - ro[i]) / rd[i];
+        float tlow = (bboxMin[i] - ro[i]) * invDir[i];
+        float thigh = (bboxMax[i] - ro[i]) * invDir[i];
 
         if (tlow > thigh) {
             float temp = tlow;
@@ -230,8 +232,8 @@ __host__ __device__ bool bboxIntersectionTest(Ray r, glm::vec3 bboxMin, glm::vec
             thigh = temp;
         }
 
-        t_min = glm::min(t_min, tlow);
-		t_max = glm::max(t_max, thigh);
+        t_min = glm::max(t_min, tlow);
+		t_max = glm::min(t_max, thigh);
         
         if (t_min > t_max) {
             return false;
