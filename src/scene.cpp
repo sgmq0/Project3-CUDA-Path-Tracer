@@ -47,7 +47,7 @@ void Scene::subdivide(BVHNode& node) {
         minCentroid = min(minCentroid, tri.centroid);
         maxCentroid = max(maxCentroid, tri.centroid);
 	}
-    glm::vec3 extent = minCentroid - maxCentroid;
+    glm::vec3 extent = maxCentroid - minCentroid;
     int axis = 0;
     if (extent.y > extent.x) axis = 1;
     if (extent.z > extent[axis]) axis = 2;

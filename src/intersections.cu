@@ -222,8 +222,8 @@ __host__ __device__ bool bboxIntersectionTestMesh(Geom mesh, Ray r) {
 }
 
 __host__ __device__ bool bboxIntersectionTest(Ray r, glm::vec3 bboxMin, glm::vec3 bboxMax) {
-    float t_min = -INFINITY;
-    float t_max = INFINITY;
+    float t_min = -FLT_MAX;
+    float t_max = FLT_MAX;
 
     glm::vec3 invDir = 1.0f / r.direction;
 
@@ -266,7 +266,7 @@ __host__ __device__ float bvhIntersectionTest(BVHNode* bvhNodes,
 
     stack[stackPtr++] = nodeIdx;
 
-    float closestT = INFINITY;
+    float closestT = FLT_MAX;
     Triangle hitTri;
 
     glm::vec3 ro = r.origin;
@@ -308,7 +308,7 @@ __host__ __device__ float bvhIntersectionTest(BVHNode* bvhNodes,
         }
     }
 
-    if (closestT < INFINITY) {
+    if (closestT < FLT_MAX) {
         glm::vec3 v0 = positions[hitTri.v0];
         glm::vec3 v1 = positions[hitTri.v1];
         glm::vec3 v2 = positions[hitTri.v2];
