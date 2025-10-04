@@ -214,6 +214,8 @@ __global__ void computeIntersections(
         float t_min = FLT_MAX;
         int hit_geom_index = -1;
         bool outside = true;
+        int materialID; // for meshes
+        bool hitMesh = false;
 
         glm::vec3 tmp_intersect;
         glm::vec3 tmp_normal;
@@ -232,25 +234,8 @@ __global__ void computeIntersections(
             {
                 t = sphereIntersectionTest(geom, pathSegment.ray, tmp_intersect, tmp_normal, outside);
             }
-            else if (geom.type == MESH)
-            {
-                // do bbox intersection here
-                /*bool hit = true;
 
-                #if BOUNDING_VOLUME_CULLING
-                hit = bboxIntersectionTestMesh(geom, pathSegment.ray);
-                #endif
-
-                if (hit) {
-                    t = meshIntersectionTest(geom, pathSegment.ray, tmp_intersect, tmp_normal, outside, triangles, numTriangles);
-                }*/
-
-                //bbox intersection culling for bvh
-                t = bvhIntersectionTest(bvhNodes, triangles, pathSegment.ray, 0, tmp_intersect, tmp_normal, outside);
-                //t = meshIntersectionTest(geom, pathSegment.ray, tmp_intersect, tmp_normal, outside, triangles, numTriangles);
-            }
-
-            // TODO: add more intersection tests here... triangle? metaball? CSG?
+            // TODO: Add back in toggleable naive mesh intersection for performance analysis
 
             // Compute the minimum t from the intersection tests to determine what
             // scene geometry object was hit first.
@@ -263,6 +248,18 @@ __global__ void computeIntersections(
             }
         }
 
+        // also consider mesh geo
+        t = bvhIntersectionTest(bvhNodes, triangles, pathSegment.ray, 0, tmp_intersect, tmp_normal, outside, materialID);
+        if (t > 0.0f && t_min > t)
+        {
+            t_min = t;
+            hit_geom_index = 5;  // debug color, load in materials a different way
+            intersect_point = tmp_intersect;
+            normal = tmp_normal;
+            intersections[path_index].materialId = materialID;
+            hitMesh = true;
+        }
+
         if (hit_geom_index == -1)
         {
             intersections[path_index].t = -1.0f;
@@ -271,7 +268,8 @@ __global__ void computeIntersections(
         {
             // The ray hits something
             intersections[path_index].t = t_min;
-            intersections[path_index].materialId = geoms[hit_geom_index].materialid;
+            if (!hitMesh)
+                intersections[path_index].materialId = geoms[hit_geom_index].materialid;
             intersections[path_index].surfaceNormal = normal;
         }
     }

@@ -9,8 +9,7 @@
 
 using namespace tinygltf;
 
-bool LoadGLTF(const std::string& filename, std::vector<Triangle>& triangles, int& numTriangles, int& start, int& triangle_count,
-    glm::vec3& min, glm::vec3& max) {
+bool LoadGLTF(const std::string& filename, std::vector<Triangle>& triangles, glm::mat4 transform, int materialID) {
     tinygltf::Model model;
     tinygltf::TinyGLTF loader;
     std::string err;
@@ -55,11 +54,6 @@ bool LoadGLTF(const std::string& filename, std::vector<Triangle>& triangles, int
     << model.scenes.size() << " scenes\n"
     << model.lights.size() << " lights\n";
 
-    start = triangles.size();
-
-    glm::vec3 bboxMin = glm::vec3(INFINITY, INFINITY, INFINITY);
-    glm::vec3 bboxMax = glm::vec3(-INFINITY, -INFINITY, -INFINITY);
-
     for (const auto& gltfMesh : model.meshes) {
         std::cout << "Current mesh has " << gltfMesh.primitives.size() << " primitives:\n";
 
@@ -81,13 +75,16 @@ bool LoadGLTF(const std::string& filename, std::vector<Triangle>& triangles, int
             size_t vertexCount = positionAccessor.count;
 
             std::vector<glm::vec3> positions;
+            std::vector<glm::vec3> normals;
+            std::vector<glm::vec2> UVs; // do this stuff later
 
             // parse positions
             for (size_t i = 0; i < vertexCount; ++i) {
                 const float* pos = reinterpret_cast<const float*>(posDataPtr + i * 12); // 3 floats * 4 bytes
                 positions.emplace_back(pos[0], pos[1], pos[2]);
-                //positions.emplace_back(pos[0] * .02f, pos[1] * .02f + 2.0f, pos[2] * .02f);
             }
+
+            // TODO: parse normals and UVs
 
             // load indices
             const auto& indexAccessor = model.accessors[meshPrimitive.indices];
@@ -123,7 +120,6 @@ bool LoadGLTF(const std::string& filename, std::vector<Triangle>& triangles, int
 
             // group positions into triangles
             if (indices.size() % 3 != 0) {
-                std::cerr << "Index count is not a multiple of 3.\n";
                 continue;
             }
 
@@ -133,39 +129,33 @@ bool LoadGLTF(const std::string& filename, std::vector<Triangle>& triangles, int
                 uint32_t i2 = indices[i + 2];
 
                 if (i0 >= positions.size() || i1 >= positions.size() || i2 >= positions.size()) {
-                std::cerr << "Index out of range!\n";
-                continue;
+                    continue;
                 }
 
-                triangles.push_back({
-                    positions[i0],
-                    positions[i1],
-                    positions[i2]
-                });
+                // apply transforms
+                glm::vec3 pos0 = positions[i0];
+                glm::vec3 pos1 = positions[i1];
+                glm::vec3 pos2 = positions[i2];
+
+                glm::vec4 pos0Trans = transform * glm::vec4(pos0.x, pos0.y, pos0.z, 1.0);
+                glm::vec4 pos1Trans = transform * glm::vec4(pos1.x, pos1.y, pos1.z, 1.0);
+                glm::vec4 pos2Trans = transform * glm::vec4(pos2.x, pos2.y, pos2.z, 1.0);
+
+                pos0 = glm::vec3(pos0Trans.x, pos0Trans.y, pos0Trans.z);
+                pos1 = glm::vec3(pos1Trans.x, pos1Trans.y, pos1Trans.z);
+                pos2 = glm::vec3(pos2Trans.x, pos2Trans.y, pos2Trans.z);
+
+                // find centroid
+                glm::vec3 centroid = (pos0 + pos1 + pos2) / 3.0f;
+
+                // push triangle back
+                triangles.push_back({pos0, pos1, pos2, centroid, materialID});
             }
-
-            for (glm::vec3 p : positions) {
-                if (p.x < bboxMin.x) bboxMin.x = p.x;
-                if (p.y < bboxMin.y) bboxMin.y = p.y;
-                if (p.z < bboxMin.z) bboxMin.z = p.z;
-
-                if (p.x > bboxMax.x) bboxMax.x = p.x;
-                if (p.y > bboxMax.y) bboxMax.y = p.y;
-                if (p.z > bboxMax.z) bboxMax.z = p.z;
-            }
-
-            std::cout << "Min Bounds: (" << bboxMin.x << ", " << bboxMin.y << ", " << bboxMin.z << ")\n";
-            std::cout << "Max Bounds: (" << bboxMax.x << ", " << bboxMax.y << ", " << bboxMax.z << ")\n";
         }
     }
 
-    triangle_count = triangles.size() - start;
-    numTriangles += triangle_count;
 
-    std::cout << "Loaded " << (triangle_count) << " triangles.\n";
-
-    min = bboxMin;
-    max = bboxMax;
+    std::cout << "Loaded " << triangles.size() << " triangles.\n";
 
     return true;
 

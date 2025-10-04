@@ -166,57 +166,54 @@ void Scene::loadFromJSON(const std::string& jsonName)
     const auto& objectsData = data["Objects"];
     for (const auto& p : objectsData)
     {
-        const auto& type = p["TYPE"];
         Geom newGeom;
-        if (type == "cube")
-        {
-            newGeom.type = CUBE;
-        }
-        else if (type == "mesh")
-        {
-            std::string file = p["FILENAME"];
 
-            //LoadGLTF(file, triangles, numTriangles);
-
-            int start;
-            int triCount;
-            glm::vec3 bboxMin;
-            glm::vec3 bboxMax;
-
-		    LoadGLTF(file, triangles, numTriangles, start, triCount, bboxMin, bboxMax);
-
-            newGeom.type = MESH;
-            newGeom.startIdx = start;
-            newGeom.numTriangles = triCount;
-            newGeom.bboxMin = bboxMin;
-            newGeom.bboxMax = bboxMax;
-        }
-        else
-        {
-            newGeom.type = SPHERE;
-        }
+        // set material ID
         newGeom.materialid = MatNameToID[p["MATERIAL"]];
+
+        // find transform vec3s
         const auto& trans = p["TRANS"];
         const auto& rotat = p["ROTAT"];
         const auto& scale = p["SCALE"];
         newGeom.translation = glm::vec3(trans[0], trans[1], trans[2]);
         newGeom.rotation = glm::vec3(rotat[0], rotat[1], rotat[2]);
         newGeom.scale = glm::vec3(scale[0], scale[1], scale[2]);
+
+        // build transformation matrix
         newGeom.transform = utilityCore::buildTransformationMatrix(
-            newGeom.translation, newGeom.rotation, newGeom.scale);
+        newGeom.translation, newGeom.rotation, newGeom.scale);
         newGeom.inverseTransform = glm::inverse(newGeom.transform);
         newGeom.invTranspose = glm::inverseTranspose(newGeom.transform);
 
-        geoms.push_back(newGeom);
+        const auto& type = p["TYPE"];
+        if (type == "cube")
+        {
+            newGeom.type = CUBE;
+            geoms.push_back(newGeom);
+        }
+        else if (type == "mesh")
+        {
+            std::string file = p["FILENAME"];
+
+            // apply transformation matrix and material to loaded triangle
+		    LoadGLTF(file, triangles, newGeom.transform, newGeom.materialid);
+            numTriangles = triangles.size();
+        }
+        else
+        {
+            newGeom.type = SPHERE;
+            geoms.push_back(newGeom);
+        }
+
     }
 
     // initialize bvh stuff
 	std::cout << "Total number of triangles: " << numTriangles << "\n";
 
 	// calculate centroids for all triangles
-    for (int i = 0; i < numTriangles; i++) {
-        triangles[i].centroid = (triangles[i].v0 + triangles[i].v1 + triangles[i].v2) / 3.0f;
-	}
+ //   for (int i = 0; i < numTriangles; i++) {
+ //       triangles[i].centroid = (triangles[i].v0 + triangles[i].v1 + triangles[i].v2) / 3.0f;
+	//}
 
     bvhNodes = std::vector<BVHNode>();
     nodesUsed = 1;

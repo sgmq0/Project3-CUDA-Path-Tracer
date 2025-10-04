@@ -133,9 +133,9 @@
             "TYPE":"mesh", 
             "MATERIAL":"diffuse_magenta",
             "FILENAME": "../Box.glb",
-            "TRANS":[0.0,0.0,0.0],
-            "ROTAT":[0.0,0.0,0.0],
-            "SCALE":[1,1,1]
+            "TRANS":[0.0,3.0,0.0],
+            "ROTAT":[30.0,0.0,0.0],
+            "SCALE":[2,2,2]
         }
     ]
 }

@@ -244,7 +244,7 @@ __host__ __device__ bool bboxIntersectionTest(Ray r, glm::vec3 bboxMin, glm::vec
 }
 
 __host__ __device__ float bvhIntersectionTest(BVHNode* bvhNodes, Triangle* triangles, Ray r, int nodeIdx,
-    glm::vec3& intersectionPoint, glm::vec3& normal, bool outside) {
+    glm::vec3& intersectionPoint, glm::vec3& normal, bool outside, int& materialID) {
     const int MAX_STACK_SIZE = 64;
     int stack[MAX_STACK_SIZE];
     int stackPtr = 0;
@@ -305,6 +305,7 @@ __host__ __device__ float bvhIntersectionTest(BVHNode* bvhNodes, Triangle* trian
 
         // world space distance
 		normal = objectNormal;
+        materialID = hitTri.materialID;
         return glm::length(intersectionPoint - r.origin);
     }
 
