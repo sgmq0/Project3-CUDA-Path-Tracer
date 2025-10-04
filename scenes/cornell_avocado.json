@@ -40,7 +40,7 @@
         "reflective_magenta":
         {
             "TYPE": "SPECULAR",
-            "ALBEDO":[0.98, 0.98, 0.98]
+            "ALBEDO":[0.98, 0.35, 0.98]
         },
         "transmissive_yellow":
         {
@@ -105,12 +105,12 @@
             "SCALE":[0.01,10.0,10.0]
         },
         {
-            "TYPE":"mesh", 
-            "MATERIAL":"reflective_magenta",
-            "FILENAME": "../DragonAttenuation.glb",
-            "TRANS":[0.0,2.0,0.0],
-            "ROTAT":[90.0,0.0,0.0],
-            "SCALE":[0.7,0.7,0.7]
+            "TYPE":"mesh",
+            "MATERIAL":"diffuse_white",
+            "FILENAME": "../Avocado.glb",
+            "TRANS":[0.0,0.0,0.0],
+            "ROTAT":[-20.0,145.0,0.0],
+            "SCALE":[100.0,100.0,100.0]
         }
     ]
 }

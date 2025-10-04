@@ -268,6 +268,7 @@ __host__ __device__ float bvhIntersectionTest(BVHNode* bvhNodes,
 
     float closestT = FLT_MAX;
     Triangle hitTri;
+    float u, v;
 
     glm::vec3 ro = r.origin;
     glm::vec3 rd = r.direction;
@@ -285,15 +286,17 @@ __host__ __device__ float bvhIntersectionTest(BVHNode* bvhNodes,
             // iterate through all triangles
             for (int i = 0; i < node.primCount; i++) {
                 Triangle tri = triangles[node.firstPrim + i];
-                float tTemp, u, v;
+                float tTemp, uTemp, vTemp;
 
-                glm::vec3 v0 = positions[tri.v0];
-                glm::vec3 v1 = positions[tri.v1];
-                glm::vec3 v2 = positions[tri.v2];
+                glm::vec3 v0 = tri.v0.position;
+                glm::vec3 v1 = tri.v1.position;
+                glm::vec3 v2 = tri.v2.position;
 
-                if (intersectRayTriangleMT(r.origin, r.direction, v0, v1, v2, tTemp, u, v)) {
+                if (intersectRayTriangleMT(r.origin, r.direction, v0, v1, v2, tTemp, uTemp, vTemp)) {
                     if (tTemp < closestT && tTemp > 0.0f) {
                         closestT = tTemp;
+                        u = uTemp;
+                        v = vTemp;
                         hitTri = tri;
                     }
                 }
@@ -308,26 +311,15 @@ __host__ __device__ float bvhIntersectionTest(BVHNode* bvhNodes,
         }
     }
 
+    // calculate normals
     if (closestT < FLT_MAX) {
-        glm::vec3 v0 = positions[hitTri.v0];
-        glm::vec3 v1 = positions[hitTri.v1];
-        glm::vec3 v2 = positions[hitTri.v2];
+        glm::vec3 n0 = hitTri.v0.normal;
+        glm::vec3 n1 = hitTri.v1.normal;
+        glm::vec3 n2 = hitTri.v2.normal;
 
-        // Calculate flat normal in object space
-        glm::vec3 edge1 = v1 - v0;
-        glm::vec3 edge2 = v2 - v0;
-        glm::vec3 objectNormal = glm::normalize(glm::cross(edge1, edge2));
+        float w = 1.0f - u - v;
+        normal = glm::normalize(w * n0 + u * n1 + v * n2);
 
-        // calculate intersection 
-        intersectionPoint = ro + closestT * rd;
-
-        outside = glm::dot(rd, objectNormal) < 0.0f;
-        if (!outside) {
-            objectNormal = -objectNormal;
-        }
-
-        // world space distance
-		normal = objectNormal;
         materialID = hitTri.materialID;
         return closestT;
     }

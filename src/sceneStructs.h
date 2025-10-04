@@ -100,8 +100,14 @@ struct ShadeableIntersection
   int materialId;
 };
 
+struct Vertex {
+    glm::vec3 position;
+    glm::vec3 normal;
+    glm::vec2 UV;
+};
+
 struct Triangle {
-    int v0, v1, v2;
+    Vertex v0, v1, v2;
     glm::vec3 centroid;
     int materialID;
 };
