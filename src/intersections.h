@@ -73,7 +73,7 @@ __host__ __device__ float sphereIntersectionTest(
     glm::vec3& normal,
     bool& outside);
 
-__host__ __device__ float meshIntersectionTest(
+/*__host__ __device__ float meshIntersectionTest(
     Geom sphere,
     Ray r,
     glm::vec3& intersectionPoint,
@@ -81,11 +81,11 @@ __host__ __device__ float meshIntersectionTest(
     bool& outside,
     Triangle* triangles,
     int numTriangles
-);
+);*/
 
 __host__ __device__ bool bboxIntersectionTestMesh(Geom mesh, Ray r);
 
 __host__ __device__ bool bboxIntersectionTest(Ray r, glm::vec3 bboxMin, glm::vec3 bboxMax);
 
-__host__ __device__ float bvhIntersectionTest(BVHNode* bvhNodes, Triangle* triangles, Ray r, int nodeIdx,
+__host__ __device__ float bvhIntersectionTest(BVHNode* bvhNodes, Triangle* triangles, glm::vec3* positions, Ray r, int nodeIdx,
     glm::vec3& intersectionPoint, glm::vec3& normal, bool outside, int& materialID);

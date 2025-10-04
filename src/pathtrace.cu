@@ -92,6 +92,7 @@ static PathSegment* dev_paths = NULL;
 static ShadeableIntersection* dev_intersections = NULL;
 static Triangle* dev_triangles = NULL;
 static BVHNode* dev_bvhNodes = NULL;
+static glm::vec3* dev_positions = NULL;
 
 // TODO: static variables for device memory, any extra info you need, etc
 // ...
@@ -127,6 +128,10 @@ void pathtraceInit(Scene* scene)
     // initialize triangles
     cudaMalloc(&dev_triangles, scene->triangles.size() * sizeof(Triangle));
     cudaMemcpy(dev_triangles, scene->triangles.data(), scene->triangles.size() * sizeof(Triangle), cudaMemcpyHostToDevice);
+
+    // initialize positions
+    cudaMalloc(&dev_positions, scene->positions.size() * sizeof(Triangle));
+    cudaMemcpy(dev_positions, scene->positions.data(), scene->positions.size() * sizeof(glm::vec3), cudaMemcpyHostToDevice);
 
     // initialize bvh
     cudaMalloc(&dev_bvhNodes, scene->bvhNodes.size() * sizeof(BVHNode));
@@ -201,7 +206,8 @@ __global__ void computeIntersections(
     ShadeableIntersection* intersections,
     Triangle* triangles,
     int numTriangles,
-    BVHNode* bvhNodes)
+    BVHNode* bvhNodes,
+    glm::vec3* positions)
 {
     int path_index = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -250,7 +256,7 @@ __global__ void computeIntersections(
         }
 
         // also consider mesh geo
-        t = bvhIntersectionTest(bvhNodes, triangles, pathSegment.ray, 0, tmp_intersect, tmp_normal, outside, materialID);
+        t = bvhIntersectionTest(bvhNodes, triangles, positions, pathSegment.ray, 0, tmp_intersect, tmp_normal, outside, materialID);
         if (t > 0.0f && t_min > t)
         {
             t_min = t;
@@ -487,7 +493,8 @@ void pathtrace(uchar4* pbo, int frame, int iter)
             dev_intersections,
             dev_triangles,
             num_triangles,
-            dev_bvhNodes
+            dev_bvhNodes,
+            dev_positions
         );
         checkCUDAError("trace one bounce");
         cudaDeviceSynchronize();

@@ -20,6 +20,8 @@ public:
 
     // bvh stuff
     std::vector<Triangle> triangles;
+    std::vector<glm::vec3> positions;
+
     int numTriangles;
     std::vector<BVHNode> bvhNodes;
     int nodesUsed;

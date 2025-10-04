@@ -94,7 +94,7 @@ struct ShadeableIntersection
 };
 
 struct Triangle {
-    glm::vec3 v0, v1, v2;
+    int v0, v1, v2;
     glm::vec3 centroid;
     int materialID;
 };

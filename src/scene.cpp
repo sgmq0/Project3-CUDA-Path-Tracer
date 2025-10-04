@@ -112,12 +112,16 @@ void Scene::updateNodeBounds(BVHNode& node) {
     for (int i = 0; i < node.primCount; i++) {
         Triangle leafTri = triangles[i + node.firstPrim];
 
-        node.aabbMin = min(node.aabbMin, leafTri.v0);
-        node.aabbMin = min(node.aabbMin, leafTri.v1);
-        node.aabbMin = min(node.aabbMin, leafTri.v2);
-        node.aabbMax = max(node.aabbMax, leafTri.v0);
-        node.aabbMax = max(node.aabbMax, leafTri.v1);
-        node.aabbMax = max(node.aabbMax, leafTri.v2);
+        glm::vec3 v0 = positions[leafTri.v0];
+        glm::vec3 v1 = positions[leafTri.v1];
+        glm::vec3 v2 = positions[leafTri.v2];
+
+        node.aabbMin = min(node.aabbMin, v0);
+        node.aabbMin = min(node.aabbMin, v1);
+        node.aabbMin = min(node.aabbMin, v2);
+        node.aabbMax = max(node.aabbMax, v0);
+        node.aabbMax = max(node.aabbMax, v1);
+        node.aabbMax = max(node.aabbMax, v2);
     }
     
 }
@@ -196,7 +200,7 @@ void Scene::loadFromJSON(const std::string& jsonName)
             std::string file = p["FILENAME"];
 
             // apply transformation matrix and material to loaded triangle
-		    LoadGLTF(file, triangles, newGeom.transform, newGeom.materialid);
+		    LoadGLTF(file, triangles, positions, newGeom.transform, newGeom.materialid);
             numTriangles = triangles.size();
         }
         else
@@ -209,11 +213,6 @@ void Scene::loadFromJSON(const std::string& jsonName)
 
     // initialize bvh stuff
 	std::cout << "Total number of triangles: " << numTriangles << "\n";
-
-	// calculate centroids for all triangles
- //   for (int i = 0; i < numTriangles; i++) {
- //       triangles[i].centroid = (triangles[i].v0 + triangles[i].v1 + triangles[i].v2) / 3.0f;
-	//}
 
     bvhNodes = std::vector<BVHNode>();
     nodesUsed = 1;

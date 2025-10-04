@@ -9,7 +9,12 @@
 
 using namespace tinygltf;
 
-bool LoadGLTF(const std::string& filename, std::vector<Triangle>& triangles, glm::mat4 transform, int materialID) {
+bool LoadGLTF(const std::string& filename, 
+    std::vector<Triangle>& triangles, 
+    std::vector<glm::vec3>& positions,
+    glm::mat4 transform, 
+    int materialID
+) {
     tinygltf::Model model;
     tinygltf::TinyGLTF loader;
     std::string err;
@@ -61,8 +66,9 @@ bool LoadGLTF(const std::string& filename, std::vector<Triangle>& triangles, glm
         Mesh loadedMesh;
 
         loadedMesh.name = gltfMesh.name;
-
         std::cout << "Current mesh name: " << gltfMesh.name << "\n";
+
+        int starting_size = positions.size();
 
         for (const auto& meshPrimitive : gltfMesh.primitives) {
             // load positions
@@ -74,14 +80,18 @@ bool LoadGLTF(const std::string& filename, std::vector<Triangle>& triangles, glm
             const unsigned char* posDataPtr = posBuffer.data.data() + posBufferView.byteOffset + positionAccessor.byteOffset;
             size_t vertexCount = positionAccessor.count;
 
-            std::vector<glm::vec3> positions;
+            //std::vector<glm::vec3> positions;
             std::vector<glm::vec3> normals;
             std::vector<glm::vec2> UVs; // do this stuff later
 
             // parse positions
             for (size_t i = 0; i < vertexCount; ++i) {
                 const float* pos = reinterpret_cast<const float*>(posDataPtr + i * 12); // 3 floats * 4 bytes
-                positions.emplace_back(pos[0], pos[1], pos[2]);
+
+                // transform position
+                glm::vec4 posTrans = transform * glm::vec4(pos[0], pos[1], pos[2], 1.0);
+
+                positions.emplace_back(posTrans[0], posTrans[1], posTrans[2]);
             }
 
             // TODO: parse normals and UVs
@@ -96,7 +106,7 @@ bool LoadGLTF(const std::string& filename, std::vector<Triangle>& triangles, glm
 
             std::vector<uint32_t> indices;
 
-            std::cout << "Loaded " << (positions.size() / 3) << " vertices.\n";
+            std::cout << "Loaded " << ((positions.size() - starting_size) / 3) << " vertices.\n";
             switch (indexAccessor.componentType) {
                 case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE: {
                     const uint8_t* buf = reinterpret_cast<const uint8_t*>(idxDataPtr);
@@ -123,33 +133,20 @@ bool LoadGLTF(const std::string& filename, std::vector<Triangle>& triangles, glm
                 continue;
             }
 
-            for (size_t i = 0; i < indices.size(); i += 3) {
-                uint32_t i0 = indices[i];
-                uint32_t i1 = indices[i + 1];
-                uint32_t i2 = indices[i + 2];
+            for (int i = 0; i < indices.size(); i += 3) {
+                int i0 = indices[i] + starting_size;
+                int i1 = indices[i + 1] + starting_size;
+                int i2 = indices[i + 2] + starting_size;
 
                 if (i0 >= positions.size() || i1 >= positions.size() || i2 >= positions.size()) {
                     continue;
                 }
 
-                // apply transforms
-                glm::vec3 pos0 = positions[i0];
-                glm::vec3 pos1 = positions[i1];
-                glm::vec3 pos2 = positions[i2];
-
-                glm::vec4 pos0Trans = transform * glm::vec4(pos0.x, pos0.y, pos0.z, 1.0);
-                glm::vec4 pos1Trans = transform * glm::vec4(pos1.x, pos1.y, pos1.z, 1.0);
-                glm::vec4 pos2Trans = transform * glm::vec4(pos2.x, pos2.y, pos2.z, 1.0);
-
-                pos0 = glm::vec3(pos0Trans.x, pos0Trans.y, pos0Trans.z);
-                pos1 = glm::vec3(pos1Trans.x, pos1Trans.y, pos1Trans.z);
-                pos2 = glm::vec3(pos2Trans.x, pos2Trans.y, pos2Trans.z);
-
                 // find centroid
-                glm::vec3 centroid = (pos0 + pos1 + pos2) / 3.0f;
+                glm::vec3 centroid = (positions[i0] + positions[i1] + positions[i2]) / 3.0f;
 
                 // push triangle back
-                triangles.push_back({pos0, pos1, pos2, centroid, materialID});
+                triangles.push_back({i0, i1, i2, centroid, materialID});
             }
         }
     }

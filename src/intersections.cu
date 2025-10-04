@@ -141,7 +141,7 @@ bool intersectRayTriangleMT(
     return t > EPSILON;
 }
 
-__host__ __device__ float meshIntersectionTest(
+/* __host__ __device__ float meshIntersectionTest(
     Geom mesh,
     Ray r,
     glm::vec3& intersectionPoint,
@@ -159,7 +159,12 @@ __host__ __device__ float meshIntersectionTest(
     for (int i = 0; i < numTriangles; ++i) {
         Triangle tri = triangles[i];
         float tTemp, u, v;
-        bool hit = intersectRayTriangleMT(ro, rd, tri.v0, tri.v1, tri.v2, tTemp, u, v);
+
+        glm::vec3 v0 = positions[tri.v0];
+        glm::vec3 v1 = positions[tri.v1];
+        glm::vec3 v2 = positions[tri.v2];
+
+        if (intersectRayTriangleMT(r.origin, r.direction, v0, v1, v2, tTemp, u, v)) {
 
         if (hit && tTemp < t) {
             t = tTemp;
@@ -169,8 +174,11 @@ __host__ __device__ float meshIntersectionTest(
 
     if (t < INFINITY) {
         // Calculate flat normal in object space
-        glm::vec3 edge1 = hitTri.v1 - hitTri.v0;
-        glm::vec3 edge2 = hitTri.v2 - hitTri.v0;
+         glm::vec3 v0 = positions[tri.v0];
+                glm::vec3 v1 = positions[tri.v1];
+                glm::vec3 v2 = positions[tri.v2];
+
+                if (intersectRayTriangleMT(r.origin, r.direction, v0, v1, v2, tTemp, u, v)) {
         glm::vec3 objectNormal = glm::normalize(glm::cross(edge1, edge2));
 
         // calculate intersection 
@@ -192,7 +200,7 @@ __host__ __device__ float meshIntersectionTest(
     }
 
     return -1;
-}
+}*/
 
 __host__ __device__ bool bboxIntersectionTestMesh(Geom mesh, Ray r) {
     float tmin = 0.0, tmax = INFINITY;
@@ -243,8 +251,15 @@ __host__ __device__ bool bboxIntersectionTest(Ray r, glm::vec3 bboxMin, glm::vec
     return t_max >= t_min && t_max > 0.0f;
 }
 
-__host__ __device__ float bvhIntersectionTest(BVHNode* bvhNodes, Triangle* triangles, Ray r, int nodeIdx,
-    glm::vec3& intersectionPoint, glm::vec3& normal, bool outside, int& materialID) {
+__host__ __device__ float bvhIntersectionTest(BVHNode* bvhNodes, 
+    Triangle* triangles, 
+    glm::vec3* positions,
+    Ray r, 
+    int nodeIdx,
+    glm::vec3& intersectionPoint, 
+    glm::vec3& normal, 
+    bool outside, 
+    int& materialID) {
     const int MAX_STACK_SIZE = 64;
     int stack[MAX_STACK_SIZE];
     int stackPtr = 0;
@@ -272,7 +287,11 @@ __host__ __device__ float bvhIntersectionTest(BVHNode* bvhNodes, Triangle* trian
                 Triangle tri = triangles[node.firstPrim + i];
                 float tTemp, u, v;
 
-                if (intersectRayTriangleMT(r.origin, r.direction, tri.v0, tri.v1, tri.v2, tTemp, u, v)) {
+                glm::vec3 v0 = positions[tri.v0];
+                glm::vec3 v1 = positions[tri.v1];
+                glm::vec3 v2 = positions[tri.v2];
+
+                if (intersectRayTriangleMT(r.origin, r.direction, v0, v1, v2, tTemp, u, v)) {
                     if (tTemp < closestT && tTemp > 0.0f) {
                         closestT = tTemp;
                         hitTri = tri;
@@ -290,9 +309,13 @@ __host__ __device__ float bvhIntersectionTest(BVHNode* bvhNodes, Triangle* trian
     }
 
     if (closestT < INFINITY) {
+        glm::vec3 v0 = positions[hitTri.v0];
+        glm::vec3 v1 = positions[hitTri.v1];
+        glm::vec3 v2 = positions[hitTri.v2];
+
         // Calculate flat normal in object space
-        glm::vec3 edge1 = hitTri.v1 - hitTri.v0;
-        glm::vec3 edge2 = hitTri.v2 - hitTri.v0;
+        glm::vec3 edge1 = v1 - v0;
+        glm::vec3 edge2 = v2 - v0;
         glm::vec3 objectNormal = glm::normalize(glm::cross(edge1, edge2));
 
         // calculate intersection 
@@ -306,7 +329,7 @@ __host__ __device__ float bvhIntersectionTest(BVHNode* bvhNodes, Triangle* trian
         // world space distance
 		normal = objectNormal;
         materialID = hitTri.materialID;
-        return glm::length(intersectionPoint - r.origin);
+        return closestT;
     }
 
     return -1;
