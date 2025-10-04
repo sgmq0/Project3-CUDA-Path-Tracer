@@ -23,6 +23,7 @@
 #define ERRORCHECK 1
 #define SORT_MATERIALS 0
 #define BOUNDING_VOLUME_CULLING 1
+#define RUSSIAN_ROULETTE 1
 
 #define INV_PI           0.31830988618379067
 
@@ -308,52 +309,73 @@ __device__ float squareToHemisphereCosinePDF(glm::vec3 sample) {
 
 
 __global__ void shadeMaterial(
-  int iter,
-  int num_paths,
-  ShadeableIntersection* shadeableIntersections,
-  PathSegment* pathSegments,
-  Material* materials)
+    int iter,
+    int num_paths,
+    ShadeableIntersection* shadeableIntersections,
+    PathSegment* pathSegments,
+    Material* materials,
+    int depth)
 {
-  int idx = blockIdx.x * blockDim.x + threadIdx.x;
-  if (idx < num_paths)
-  {
-    ShadeableIntersection intersection = shadeableIntersections[idx];
-    if (intersection.t > 0.0f) // if the intersection exists...
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx < num_paths)
     {
-      // Set up the RNG
-      // LOOK: this is how you use thrust's RNG! Please look at
-      // makeSeededRandomEngine as well.
-      thrust::default_random_engine rng = makeSeededRandomEngine(iter, idx, 0);
-      thrust::uniform_real_distribution<float> u01(0, 1);
+        ShadeableIntersection intersection = shadeableIntersections[idx];
+        if (intersection.t > 0.0f) // if the intersection exists...
+        {
+            // Set up the RNG
+            // LOOK: this is how you use thrust's RNG! Please look at
+            // makeSeededRandomEngine as well.
+            thrust::default_random_engine rng = makeSeededRandomEngine(iter, idx, 0);
+            thrust::uniform_real_distribution<float> u01(0, 1);
 
-      Material material = materials[intersection.materialId];
-      glm::vec3 materialColor = material.color;
+            Material material = materials[intersection.materialId];
+            glm::vec3 materialColor = material.color;
 
-      // If the material indicates that the object was a light, "light" the ray
-      if (material.emittance > 0.0f) {
-        pathSegments[idx].color *= (materialColor * material.emittance);
-        pathSegments[idx].remainingBounces = 0;
-      }
-      // Otherwise, sample the bsdf
-      else {
-        //sample a new ray
-        //calculate intersect
-        glm::vec3 intersect = pathSegments[idx].ray.origin + glm::normalize(pathSegments[idx].ray.direction) * intersection.t;
+            // If the material indicates that the object was a light, "light" the ray
+            if (material.emittance > 0.0f) {
+                pathSegments[idx].color *= (materialColor * material.emittance);
+                pathSegments[idx].remainingBounces = 0;
+            }
+            // Otherwise, sample the bsdf
+            else {
+                //sample a new ray
+                //calculate intersect
+                glm::vec3 intersect = pathSegments[idx].ray.origin + glm::normalize(pathSegments[idx].ray.direction) * intersection.t;
         
-        // do bsdf stuff
-        scatterRay(pathSegments[idx], intersect, intersection.surfaceNormal, material, rng);
-      }
+                // do bsdf stuff
+                scatterRay(pathSegments[idx], intersect, intersection.surfaceNormal, material, rng);
+            }
 
-      // If there was no intersection, color the ray black.
-      // Lots of renderers use 4 channel color, RGBA, where A = alpha, often
-      // used for opacity, in which case they can indicate "no opacity".
-      // This can be useful for post-processing and image compositing.
+            // If there was no intersection, color the ray black.
+            // Lots of renderers use 4 channel color, RGBA, where A = alpha, often
+            // used for opacity, in which case they can indicate "no opacity".
+            // This can be useful for post-processing and image compositing.
+        }
+        else {
+            pathSegments[idx].remainingBounces = 0;
+            pathSegments[idx].color = glm::vec3(0.0f);
+        }
     }
-    else {
-      pathSegments[idx].remainingBounces = 0;
-      pathSegments[idx].color = glm::vec3(0.0f);
+
+    // russian roulette
+#if RUSSIAN_ROULETTE
+    if (depth > 3 && pathSegments[idx].remainingBounces > 0) {
+        thrust::default_random_engine rng = makeSeededRandomEngine(iter, idx, 0);
+        thrust::uniform_real_distribution<float> u01(0, 1);
+
+        glm::vec3 col = pathSegments[idx].color;
+        float p = glm::max(glm::max(col.x, col.y), col.z);
+        float q = glm::max(0.05f, p);
+       
+        if (u01(rng) > q) {
+            pathSegments[idx].remainingBounces = 0;
+        }
+        else {
+            pathSegments[idx].color /= q;
+        }
     }
-  }
+#endif
+
 }
 
 // Add the current iteration's output to the overall image
@@ -489,7 +511,8 @@ void pathtrace(uchar4* pbo, int frame, int iter)
             num_paths,
             dev_intersections,
             dev_paths,
-            dev_materials
+            dev_materials,
+            depth
         );
         checkCUDAError("shade material");
         cudaDeviceSynchronize();
