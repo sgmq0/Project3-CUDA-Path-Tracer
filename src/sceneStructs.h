@@ -16,6 +16,14 @@ enum GeomType
     MESH
 };
 
+enum MaterialType
+{
+    DIFFUSE,
+    SPECULAR,
+    TRANSMISSIVE,
+    LIGHT
+};
+
 struct Ray
 {
     glm::vec3 origin;
@@ -42,6 +50,7 @@ struct Geom
 
 struct Material
 {
+    enum MaterialType type;
     glm::vec3 color;
     struct
     {
@@ -50,8 +59,6 @@ struct Material
     } specular;
     float indexOfRefraction;
     float emittance;
-    float roughness;
-    float transmission;
 };
 
 struct Camera

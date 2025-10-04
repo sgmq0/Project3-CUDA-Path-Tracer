@@ -152,17 +152,31 @@ void Scene::loadFromJSON(const std::string& jsonName)
         const auto& p = item.value();
         Material newMaterial{};
 
-        float roughness = p["ROUGHNESS"];  // basically specular degree
-        float indexOfRefraction = p["IOR"]; // for glass material
-		float transmission = p["TRANSMISSION"];   // for glass material
-		float emittance = p["EMITTANCE"]; // light intensity
         const auto& albedo = p["ALBEDO"];   // base color
-
-		newMaterial.roughness = roughness;
-		newMaterial.indexOfRefraction = indexOfRefraction;
-        newMaterial.transmission = transmission;
-		newMaterial.emittance = emittance;
         newMaterial.color = glm::vec3(albedo[0], albedo[1], albedo[2]);
+
+        const auto& type = p["TYPE"];
+        if (type == "LIGHT") {
+            newMaterial.type = LIGHT;
+
+            float emittance = p["EMITTANCE"]; // light intensity
+            newMaterial.emittance = emittance;
+        } 
+        else if (type == "DIFFUSE")
+        {
+            newMaterial.type = DIFFUSE;
+        }
+        else if (type == "SPECULAR")
+        {
+            newMaterial.type = SPECULAR;
+        }
+        else
+        {
+            newMaterial.type = TRANSMISSIVE;
+
+            float indexOfRefraction = p["IOR"]; // for glass material
+            newMaterial.indexOfRefraction = indexOfRefraction;
+        }
 
         MatNameToID[name] = materials.size();
         materials.emplace_back(newMaterial);

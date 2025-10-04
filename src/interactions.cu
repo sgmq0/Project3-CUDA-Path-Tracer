@@ -94,19 +94,11 @@ __host__ __device__ void scatterRay(
 {
     glm::vec3 newDirection = glm::vec3();
 
-    if (m.transmission == 0) {
-        // lambert and roughness/reflection
-        thrust::uniform_real_distribution<float> u01(0, 1);
-        float rand = u01(rng);
-
-        if (rand < m.roughness) {
-            newDirection = normalize(calculateRandomDirectionInHemisphere(normal, rng));
-        }
-        else {
-            newDirection = reflect_direction(normal, pathSegment.ray.direction);
-        }
+    if (m.type == DIFFUSE) {
+        // lambert 
+        newDirection = normalize(calculateRandomDirectionInHemisphere(normal, rng));
     }
-    else if (m.roughness < 1 && m.transmission > 0) {
+    else if (m.type == TRANSMISSIVE) {
 		// mix of reflection and refraction
         thrust::uniform_real_distribution<float> u01(0, 1);
 		float rand = u01(rng);
@@ -141,9 +133,9 @@ __host__ __device__ void scatterRay(
             glm::vec3 refr = refract_direction(m.indexOfRefraction, normal, pathSegment.ray.direction);
 			newDirection = refr;
 		}
-    } else if (m.transmission > 0) {
+    } else if (m.type == SPECULAR) {
 		// pure refraction
-        newDirection = refract_direction(m.indexOfRefraction, normal, pathSegment.ray.direction);
+        newDirection = reflect_direction(normal, pathSegment.ray.direction);
     }
 
     // set new ray

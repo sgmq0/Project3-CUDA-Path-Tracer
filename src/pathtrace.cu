@@ -180,8 +180,8 @@ __global__ void generateRayFromCamera(Camera cam, int iter, int traceDepth, Path
         thrust::uniform_real_distribution<float> u02(-1, 1);
 
         // anti aliasing
-        float rand_x = u01(rng);
-        float rand_y = u02(rng);
+        float rand_x = u01(rng) * 0.5f;
+        float rand_y = u02(rng) * 0.5f;
 
         segment.ray.direction = glm::normalize(cam.view
             - cam.right * cam.pixelLength.x * ((float)x + rand_x - (float)cam.resolution.x * 0.5f)
@@ -338,7 +338,7 @@ __global__ void shadeMaterial(
             glm::vec3 materialColor = material.color;
 
             // If the material indicates that the object was a light, "light" the ray
-            if (material.emittance > 0.0f) {
+            if (material.type == LIGHT) {
                 pathSegments[idx].color *= (materialColor * material.emittance);
                 pathSegments[idx].remainingBounces = 0;
             }
