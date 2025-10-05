@@ -152,7 +152,7 @@ void Scene::loadFromJSON(const std::string& jsonName)
     {
         const auto& name = item.key();
         const auto& p = item.value();
-        Material newMaterial{};
+        MyMaterial newMaterial{};
 
         const auto& albedo = p["ALBEDO"];   // base color
         newMaterial.color = glm::vec3(albedo[0], albedo[1], albedo[2]);
@@ -200,8 +200,7 @@ void Scene::loadFromJSON(const std::string& jsonName)
         newGeom.scale = glm::vec3(scale[0], scale[1], scale[2]);
 
         // build transformation matrix
-        newGeom.transform = utilityCore::buildTransformationMatrix(
-        newGeom.translation, newGeom.rotation, newGeom.scale);
+        newGeom.transform = utilityCore::buildTransformationMatrix(newGeom.translation, newGeom.rotation, newGeom.scale);
         newGeom.inverseTransform = glm::inverse(newGeom.transform);
         newGeom.invTranspose = glm::inverseTranspose(newGeom.transform);
 
@@ -216,7 +215,7 @@ void Scene::loadFromJSON(const std::string& jsonName)
             std::string file = p["FILENAME"];
 
             // create new material for the mesh
-            Material meshMaterial;
+            /*MyMaterial meshMaterial;
             meshMaterial.color = glm::vec3(1.0f, 0.0f, 1.0f);
             meshMaterial.type = DIFFUSE;
 
@@ -225,17 +224,21 @@ void Scene::loadFromJSON(const std::string& jsonName)
             MatNameToID[fileNumAsString] = materials.size();
             int meshMatID = MatNameToID[fileNumAsString];
 
-            int textureStart = textures.size();
+            int textureStart = textures.size();*/
 
             // apply transformation matrix and material to loaded triangle
-		    LoadGLTF(file, triangles, textures, newGeom.transform, meshMatID);
+		    LoadGLTF(file, triangles, textures, materials, MatNameToID, newGeom.transform, 0);
             
-            int numLoadedTextures = textures.size() - textureStart;
+            // this is REALLY BAD, i need to change this lmao
+            /*int numLoadedTextures = textures.size() - textureStart;
             if (numLoadedTextures > 0) {
                 meshMaterial.colorTextureIdx = textureStart;
             }
+            else {
+                meshMaterial.colorTextureIdx = 0;
+            }
             
-            materials.emplace_back(meshMaterial);
+            materials.emplace_back(meshMaterial);*/
 
             numTriangles = triangles.size();
         }

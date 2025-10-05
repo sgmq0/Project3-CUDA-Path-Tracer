@@ -36,7 +36,7 @@
     },
     "Camera":
     {
-        "RES":[1920,1080],
+        "RES":[1920, 1080],
         "FOVY":45.0,
         "ITERATIONS":5000,
         "DEPTH":8,
@@ -52,43 +52,43 @@
             "MATERIAL":"sky",
             "TRANS":[0.0,0.0,0.0],
             "ROTAT":[0.0,0.0,0.0],
-            "SCALE":[10.0,0.01,10.0]
+            "SCALE":[30.0,0.01,30.0]
         },
         {
             "TYPE":"cube",
             "MATERIAL":"sky",
-            "TRANS":[0.0,10.0,0.0],
+            "TRANS":[0.0,30.0,0.0],
             "ROTAT":[0.0,0.0,90.0],
-            "SCALE":[0.01,10.0,10.0]
+            "SCALE":[0.01,30.0,30.0]
         },
         {
             "TYPE":"cube",
             "MATERIAL":"sky",
-            "TRANS":[0.0,5.0,-5.0],
+            "TRANS":[0.0,15.0,-15.0],
             "ROTAT":[0.0,90.0,0.0],
-            "SCALE":[0.01,10.0,10.0]
+            "SCALE":[0.01,30.0,30.0]
         },
         {
             "TYPE":"cube",
             "MATERIAL":"sky",
-            "TRANS":[-5.0,5.0,0.0],
+            "TRANS":[-15.0,15.0,0.0],
             "ROTAT":[0.0,0.0,0.0],
-            "SCALE":[0.01,10.0,10.0]
+            "SCALE":[0.01,30.0,30.0]
         },
         {
             "TYPE":"cube",
             "MATERIAL":"sky",
-            "TRANS":[5.0,5.0,0.0],
+            "TRANS":[15.0,15.0,0.0],
             "ROTAT":[0.0,0.0,0.0],
-            "SCALE":[0.01,10.0,10.0]
+            "SCALE":[0.01,30.0,30.0]
         },
         {
             "TYPE":"mesh",
             "MATERIAL":"diffuse_white",
-            "FILENAME": "../meshes/forest_demo.glb",
-            "TRANS":[0.0,2.0,0.0],
-            "ROTAT":[-90.0,0,0.0],
-            "SCALE":[0.2,0.2,0.2]
+            "FILENAME": "../meshes/DamagedHelmet.glb",
+            "TRANS":[0.0,5.0,0.0],
+            "ROTAT":[90.0,0.0,0.0],
+            "SCALE":[3.0,3.0,3.0]
         }
     ]
 }

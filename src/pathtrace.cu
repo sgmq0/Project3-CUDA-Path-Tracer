@@ -88,7 +88,7 @@ static Scene* hst_scene = NULL;
 static GuiDataContainer* guiData = NULL;
 static glm::vec3* dev_image = NULL;
 static Geom* dev_geoms = NULL;
-static Material* dev_materials = NULL;
+static MyMaterial* dev_materials = NULL;
 static PathSegment* dev_paths = NULL;
 static ShadeableIntersection* dev_intersections = NULL;
 static Triangle* dev_triangles = NULL;
@@ -119,8 +119,8 @@ void pathtraceInit(Scene* scene)
     cudaMalloc(&dev_geoms, scene->geoms.size() * sizeof(Geom));
     cudaMemcpy(dev_geoms, scene->geoms.data(), scene->geoms.size() * sizeof(Geom), cudaMemcpyHostToDevice);
 
-    cudaMalloc(&dev_materials, scene->materials.size() * sizeof(Material));
-    cudaMemcpy(dev_materials, scene->materials.data(), scene->materials.size() * sizeof(Material), cudaMemcpyHostToDevice);
+    cudaMalloc(&dev_materials, scene->materials.size() * sizeof(MyMaterial));
+    cudaMemcpy(dev_materials, scene->materials.data(), scene->materials.size() * sizeof(MyMaterial), cudaMemcpyHostToDevice);
 
     cudaMalloc(&dev_intersections, pixelcount * sizeof(ShadeableIntersection));
     cudaMemset(dev_intersections, 0, pixelcount * sizeof(ShadeableIntersection));
@@ -262,8 +262,9 @@ __global__ void computeIntersections(
     Triangle* triangles,
     int numTriangles,
     BVHNode* bvhNodes,
-    Material* materials,
-    cudaTextureObject_t* textures)
+    MyMaterial* materials,
+    cudaTextureObject_t* textures,
+    int numTextures)
 {
     int path_index = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -327,18 +328,6 @@ __global__ void computeIntersections(
             hitMesh = true;
         }
 
-        // if an alpha value was hit...
-        //if (hitMesh) {
-        //    Material material = materials[materialID];
-        //    glm::vec4 col = sampleTexture(textures[material.colorTextureIdx], uv.x, uv.y);
-        //    if (col.a < 0.1f) {
-        //        intersections[path_index].rejectedByAlpha = true;
-        //    }
-        //    else {
-        //        intersections[path_index].rejectedByAlpha = false;
-        //    }
-        //}
-
         if (hit_geom_index == -1)
         {
             intersections[path_index].t = -1.0f;
@@ -352,8 +341,10 @@ __global__ void computeIntersections(
             }
             else {
                 // only use UVs if the input is a mesh (change this later)
-                intersections[path_index].useUV = true;
-                intersections[path_index].surfaceUV = uv;
+                if (numTextures > 0) {
+                    intersections[path_index].useUV = true;
+                    intersections[path_index].surfaceUV = uv;
+                }
             }
             intersections[path_index].surfaceNormal = normal;
         }
@@ -396,7 +387,7 @@ __global__ void shadeMaterial(
     int num_paths,
     ShadeableIntersection* shadeableIntersections,
     PathSegment* pathSegments,
-    Material* materials,
+    MyMaterial* materials,
     cudaTextureObject_t* textures,
     int depth)
 {
@@ -412,7 +403,7 @@ __global__ void shadeMaterial(
             thrust::default_random_engine rng = makeSeededRandomEngine(iter, idx, 0);
             thrust::uniform_real_distribution<float> u01(0, 1);
 
-            Material material = materials[intersection.materialId];
+            MyMaterial material = materials[intersection.materialId];
             glm::vec3 materialColor = material.color;
 
             // If the material indicates that the object was a light, "light" the ray
@@ -567,6 +558,7 @@ void pathtrace(uchar4* pbo, int frame, int iter)
     int num_paths = dev_path_end - dev_paths;
     int num_paths_orig = num_paths;
     int num_triangles = hst_scene->numTriangles;
+    int num_textures = hst_scene->textures.size();
 
     // --- PathSegment Tracing Stage ---
     // Shoot ray into scene, bounce between objects, push shading chunks
@@ -590,7 +582,8 @@ void pathtrace(uchar4* pbo, int frame, int iter)
             num_triangles,
             dev_bvhNodes,
             dev_materials,
-            dev_cudaTextures
+            dev_cudaTextures,
+            num_textures
         );
         checkCUDAError("trace one bounce");
         cudaDeviceSynchronize();

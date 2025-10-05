@@ -9,9 +9,11 @@
 
 using namespace tinygltf;
 
-bool LoadGLTF(const std::string& filename, 
-    std::vector<Triangle>& triangles, 
+bool LoadGLTF(const std::string& filename,
+    std::vector<Triangle>& triangles,
     std::vector<MyTexture>& textures,
+    std::vector<MyMaterial>& materials,
+    std::unordered_map<std::string, uint32_t>& materialMap,
     glm::mat4 transform, 
     int materialID
 ) {
@@ -60,6 +62,60 @@ bool LoadGLTF(const std::string& filename,
     //<< model.lights.size() << " lights\n";
 
     glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(transform)));
+
+    int textureStart = textures.size();
+
+    // iterate through all the textures and load them
+    for (const auto& gltfTexture : model.textures) {
+        std::cout << "Found texture!\n";
+        MyTexture loadedTexture;
+        const auto& image = model.images[gltfTexture.source];
+        loadedTexture.components = image.component;
+
+        loadedTexture.width = image.width;
+        loadedTexture.height = image.height;
+
+        const auto size =
+            image.component * image.width * image.height * sizeof(unsigned char);
+        loadedTexture.image = new unsigned char[size];
+        memcpy(loadedTexture.image, image.image.data(), size);
+        textures.push_back(loadedTexture);
+    }
+
+    int startMaterial = materials.size();
+
+    // iterate through all the materials and connect them to the right textures
+    for (const auto& gltfMaterial : model.materials) {
+        std::cout << "Found material!\n";
+
+        MyMaterial newMaterial;
+        newMaterial.color = glm::vec3(1.0f, 0.0f, 1.0f);
+        newMaterial.type = DIFFUSE;
+
+        materialMap[gltfMaterial.name] = materials.size();
+        int meshMatID = materialMap[gltfMaterial.name];
+
+        // base color
+        if (gltfMaterial.values.find("baseColorTexture") != gltfMaterial.values.end()) {
+            
+            // find index of the image
+            int texIndex = gltfMaterial.values.at("baseColorTexture").TextureIndex();
+            const auto& gltfTexture = model.textures[texIndex];
+            int imageIndex = gltfTexture.source;
+
+            // note the index of the texture
+            int colorTextureIndex = imageIndex + textureStart;
+            newMaterial.colorTextureIdx = colorTextureIndex;
+        }
+        else {
+            newMaterial.colorTextureIdx = 0;
+        }
+
+        // push material into material array
+        materials.push_back(newMaterial);
+    }
+
+    std::cout << "Total textures: " << textures.size() << "\n";
 
     for (const auto& gltfMesh : model.meshes) {
         // Create a mesh object
@@ -192,27 +248,9 @@ bool LoadGLTF(const std::string& filename,
                 Vertex v2 = { positions[i2], normals[i2], UVs[i2] };
 
                 // push triangle back
-                triangles.push_back({v0, v1, v2, centroid, materialID});
+                triangles.push_back({v0, v1, v2, centroid, startMaterial});
             }
         }
-    }
-
-    // iterate through all the textures
-    for (const auto& gltfTexture : model.textures) {
-        std::cout << "Found texture!\n";
-        MyTexture loadedTexture;
-        const auto& image = model.images[gltfTexture.source];
-        loadedTexture.components = image.component;
-        std::cout << image.component << std::endl;
-
-        loadedTexture.width = image.width;
-        loadedTexture.height = image.height;
-
-        const auto size =
-            image.component * image.width * image.height * sizeof(unsigned char);
-        loadedTexture.image = new unsigned char[size];
-        memcpy(loadedTexture.image, image.image.data(), size);
-        textures.push_back(loadedTexture);
     }
 
     return true;

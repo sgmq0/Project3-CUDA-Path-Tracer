@@ -15,7 +15,7 @@ public:
     Scene(std::string filename);
 
     std::vector<Geom> geoms;
-    std::vector<Material> materials;
+    std::vector<MyMaterial> materials;
     RenderState state;
 
     // bvh stuff

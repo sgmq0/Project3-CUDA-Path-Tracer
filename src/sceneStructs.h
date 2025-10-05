@@ -48,7 +48,7 @@ struct Geom
     glm::vec3 bboxMax;
 };
 
-struct Material
+struct MyMaterial
 {
     enum MaterialType type;
     glm::vec3 color;
@@ -60,6 +60,7 @@ struct Material
     float indexOfRefraction;
     float emittance;
     int colorTextureIdx;
+    int normalTextureIdx;
 };
 
 struct Camera
