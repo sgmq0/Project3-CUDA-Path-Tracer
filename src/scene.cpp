@@ -214,31 +214,8 @@ void Scene::loadFromJSON(const std::string& jsonName)
         {
             std::string file = p["FILENAME"];
 
-            // create new material for the mesh
-            /*MyMaterial meshMaterial;
-            meshMaterial.color = glm::vec3(1.0f, 0.0f, 1.0f);
-            meshMaterial.type = DIFFUSE;
-
-            std::string fileNumAsString = std::to_string(numMeshes);
-            numMeshes += 1;
-            MatNameToID[fileNumAsString] = materials.size();
-            int meshMatID = MatNameToID[fileNumAsString];
-
-            int textureStart = textures.size();*/
-
             // apply transformation matrix and material to loaded triangle
 		    LoadGLTF(file, triangles, textures, materials, MatNameToID, newGeom.transform, 0);
-            
-            // this is REALLY BAD, i need to change this lmao
-            /*int numLoadedTextures = textures.size() - textureStart;
-            if (numLoadedTextures > 0) {
-                meshMaterial.colorTextureIdx = textureStart;
-            }
-            else {
-                meshMaterial.colorTextureIdx = 0;
-            }
-            
-            materials.emplace_back(meshMaterial);*/
 
             numTriangles = triangles.size();
         }

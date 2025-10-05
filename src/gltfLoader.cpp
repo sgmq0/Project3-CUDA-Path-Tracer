@@ -111,6 +111,22 @@ bool LoadGLTF(const std::string& filename,
             newMaterial.colorTextureIdx = 0;
         }
 
+        // normals
+        if (gltfMaterial.additionalValues.find("normalTexture") != gltfMaterial.values.end()) {
+
+            // find index of the image
+            int texIndex = gltfMaterial.additionalValues.at("normalTexture").TextureIndex();
+            const auto& gltfTexture = model.textures[texIndex];
+            int imageIndex = gltfTexture.source;
+
+            // note the index of the texture
+            int normalTextureIndex = imageIndex + textureStart;
+            newMaterial.normalTextureIdx = normalTextureIndex;
+        }
+        else {
+            newMaterial.normalTextureIdx = 0;
+        }
+
         // push material into material array
         materials.push_back(newMaterial);
     }
@@ -230,6 +246,12 @@ bool LoadGLTF(const std::string& filename,
                 continue;
             }
 
+            // find material and material index
+            int materialIndex = meshPrimitive.material;
+            const auto& material = model.materials[materialIndex];
+            const auto& name = material.name;
+            int matID = materialMap[name];
+
             for (int i = 0; i < indices.size(); i += 3) {
                 int i0 = indices[i];
                 int i1 = indices[i + 1];
@@ -248,7 +270,7 @@ bool LoadGLTF(const std::string& filename,
                 Vertex v2 = { positions[i2], normals[i2], UVs[i2] };
 
                 // push triangle back
-                triangles.push_back({v0, v1, v2, centroid, startMaterial});
+                triangles.push_back({v0, v1, v2, centroid, matID});
             }
         }
     }
