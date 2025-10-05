@@ -11,6 +11,18 @@ CUDA Path Tracer
 *DO NOT* leave the README to the last minute! It is a crucial part of the
 project, and we will not be able to grade you without a good README.
 
+Features 
+- Stream Compaction
+- BSDF evaluation for diffuse and perfectly specular surfaces
+- Stochastic sampled anti aliasing
+- Material sorting
+- (2) refractive materials (glass)
+- (1) russian roulette path termination
+- (4) GLTF loading
+- (6) BVH structure
+- (5?) Texture mapping
+- Need to implement bump/normal mapping...
+
 IMPLEMENTATION NOTES:
 - gltf loading loads every triangle into a vector stored in the scene object
 - whichever geom object is loaded, if it's a mesh, stores the start and end index of the mesh's corresponding triangles. this is so each geom can be transformed independently of each other based on the json

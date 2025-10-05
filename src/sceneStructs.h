@@ -59,6 +59,7 @@ struct Material
     } specular;
     float indexOfRefraction;
     float emittance;
+    int colorTextureIdx;
 };
 
 struct Camera

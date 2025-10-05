@@ -14,6 +14,8 @@
 using namespace std;
 using json = nlohmann::json;
 
+static int numMeshes;
+
 Scene::Scene(string filename)
 {
     cout << "Reading scene from " << filename << " ..." << endl;
@@ -213,8 +215,28 @@ void Scene::loadFromJSON(const std::string& jsonName)
         {
             std::string file = p["FILENAME"];
 
+            // create new material for the mesh
+            Material meshMaterial;
+            meshMaterial.color = glm::vec3(1.0f, 0.0f, 1.0f);
+            meshMaterial.type = DIFFUSE;
+
+            std::string fileNumAsString = std::to_string(numMeshes);
+            numMeshes += 1;
+            MatNameToID[fileNumAsString] = materials.size();
+            int meshMatID = MatNameToID[fileNumAsString];
+
+            int textureStart = textures.size();
+
             // apply transformation matrix and material to loaded triangle
-		    LoadGLTF(file, triangles, textures, newGeom.transform, newGeom.materialid);
+		    LoadGLTF(file, triangles, textures, newGeom.transform, meshMatID);
+            
+            int numLoadedTextures = textures.size() - textureStart;
+            if (numLoadedTextures > 0) {
+                meshMaterial.colorTextureIdx = textureStart;
+            }
+            
+            materials.emplace_back(meshMaterial);
+
             numTriangles = triangles.size();
         }
         else

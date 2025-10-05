@@ -107,9 +107,17 @@
         {
             "TYPE":"mesh",
             "MATERIAL":"diffuse_white",
-            "FILENAME": "../Avocado.glb",
+            "FILENAME": "../meshes/Avocado.glb",
             "TRANS":[0.0,0.0,0.0],
             "ROTAT":[-20.0,145.0,0.0],
+            "SCALE":[100.0,100.0,100.0]
+        },
+        {
+            "TYPE":"mesh",
+            "MATERIAL":"diffuse_white",
+            "FILENAME": "../meshes/Avocado.glb",
+            "TRANS":[2.0,2.0,0.0],
+            "ROTAT":[50.0,40.0,0.0],
             "SCALE":[100.0,100.0,100.0]
         }
     ]

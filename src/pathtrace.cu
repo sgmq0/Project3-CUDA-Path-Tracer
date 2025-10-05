@@ -97,6 +97,7 @@ static MyTexture* dev_textures = NULL;
 static cudaTextureObject_t* dev_cudaTextures = NULL;
 
 static std::vector<cudaTextureObject_t> cudaTextures;
+static std::vector<cudaArray_t> cudaArrays;
 
 void InitDataContainer(GuiDataContainer* imGuiData)
 {
@@ -144,6 +145,7 @@ void pathtraceInit(Scene* scene)
 
         cudaArray_t cudaArray;
         cudaMallocArray(&cudaArray, &channelDesc, tex.width, tex.height);
+        cudaArrays.push_back(cudaArray);
         
         // copy to array
         cudaMemcpy2DToArray(cudaArray, 0, 0, tex.image, tex.width * sizeof(uchar4), 
@@ -190,6 +192,13 @@ void pathtraceFree()
     for (auto texObj : cudaTextures) {
         cudaDestroyTextureObject(texObj);
     }
+    cudaTextures.clear();
+
+    for (auto arr : cudaArrays) {
+        cudaFreeArray(arr);
+    }
+    cudaArrays.clear();
+
     cudaFree(dev_cudaTextures);
 
     checkCUDAError("pathtraceFree");
@@ -397,14 +406,11 @@ __global__ void shadeMaterial(
                 //sample a new ray
                 //calculate intersect
                 glm::vec3 intersect = pathSegments[idx].ray.origin + glm::normalize(pathSegments[idx].ray.direction) * intersection.t;
-        
-                bool useTexture = intersection.useUV;
-                glm::vec2 uv = intersection.surfaceUV;
-                cudaTextureObject_t sampleTexture = textures[0];
-                float4 col = tex2D<float4>(sampleTexture, uv.x, uv.y);
                 
                 glm::vec3 color = materialColor;
-                if (useTexture) {
+                if (intersection.useUV) {
+                    glm::vec2 uv = intersection.surfaceUV;
+                    float4 col = tex2D<float4>(textures[material.colorTextureIdx], uv.x, uv.y);
                     color = glm::vec3(col.x, col.y, col.z);
                 }
 
