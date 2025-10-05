@@ -49,28 +49,28 @@
     [
         {
             "TYPE":"cube",
-            "MATERIAL":"sky",
+            "MATERIAL":"diffuse_white",
             "TRANS":[0.0,0.0,0.0],
             "ROTAT":[0.0,0.0,0.0],
             "SCALE":[30.0,0.01,30.0]
         },
         {
             "TYPE":"cube",
-            "MATERIAL":"sky",
+            "MATERIAL":"diffuse_white",
             "TRANS":[0.0,30.0,0.0],
             "ROTAT":[0.0,0.0,90.0],
             "SCALE":[0.01,30.0,30.0]
         },
         {
             "TYPE":"cube",
-            "MATERIAL":"sky",
+            "MATERIAL":"diffuse_white",
             "TRANS":[0.0,15.0,-15.0],
             "ROTAT":[0.0,90.0,0.0],
             "SCALE":[0.01,30.0,30.0]
         },
         {
             "TYPE":"cube",
-            "MATERIAL":"sky",
+            "MATERIAL":"diffuse_white",
             "TRANS":[-15.0,15.0,0.0],
             "ROTAT":[0.0,0.0,0.0],
             "SCALE":[0.01,30.0,30.0]

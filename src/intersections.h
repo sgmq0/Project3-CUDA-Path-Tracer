@@ -87,5 +87,6 @@ __host__ __device__ bool bboxIntersectionTestMesh(Geom mesh, Ray r);
 
 __host__ __device__ bool bboxIntersectionTest(Ray r, glm::vec3 bboxMin, glm::vec3 bboxMax);
 
-__host__ __device__ float bvhIntersectionTest(BVHNode* bvhNodes, Triangle* triangles, Ray r, int nodeIdx,
-    glm::vec3& intersectionPoint, glm::vec3& normal, glm::vec2& uvCoord, bool outside, int& materialID);
+__device__ float bvhIntersectionTest(BVHNode* bvhNodes, Triangle* triangles, Ray r, int nodeIdx,
+    glm::vec3& intersectionPoint, glm::vec3& normal, glm::vec2& uvCoord, bool outside, int& materialID,
+    MyMaterial* materials, cudaTextureObject_t* textures);

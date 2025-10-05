@@ -91,6 +91,7 @@ bool LoadGLTF(const std::string& filename,
         MyMaterial newMaterial;
         newMaterial.color = glm::vec3(1.0f, 0.0f, 1.0f);
         newMaterial.type = DIFFUSE;
+        newMaterial.useNormalMap = false;
 
         materialMap[gltfMaterial.name] = materials.size();
         int meshMatID = materialMap[gltfMaterial.name];
@@ -112,7 +113,7 @@ bool LoadGLTF(const std::string& filename,
         }
 
         // normals
-        if (gltfMaterial.additionalValues.find("normalTexture") != gltfMaterial.values.end()) {
+        if (gltfMaterial.additionalValues.find("normalTexture") != gltfMaterial.additionalValues.end()) {
 
             // find index of the image
             int texIndex = gltfMaterial.additionalValues.at("normalTexture").TextureIndex();
@@ -122,6 +123,7 @@ bool LoadGLTF(const std::string& filename,
             // note the index of the texture
             int normalTextureIndex = imageIndex + textureStart;
             newMaterial.normalTextureIdx = normalTextureIndex;
+            newMaterial.useNormalMap = true;
         }
         else {
             newMaterial.normalTextureIdx = 0;
@@ -264,10 +266,25 @@ bool LoadGLTF(const std::string& filename,
                 // find centroid
                 glm::vec3 centroid = (positions[i0] + positions[i1] + positions[i2]) / 3.0f;
 
+                // compute tangent and bitangent
+                glm::vec3 edge1 = positions[i1] - positions[i0];
+                glm::vec3 edge2 = positions[i2] - positions[i0];
+
+                glm::vec2 deltaUV1 = UVs[i1] - UVs[i0];
+                glm::vec2 deltaUV2 = UVs[i2] - UVs[i0];
+
+                float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+
+                glm::vec3 tangent = f * (edge1 * deltaUV2.y - edge2 * deltaUV1.y);
+                glm::vec3 bitangent = f * (edge2 * deltaUV1.x - edge1 * deltaUV2.x);
+
+                tangent = glm::normalize(tangent);
+                bitangent = glm::normalize(bitangent);
+
                 Triangle tri;
-                Vertex v0 = { positions[i0], normals[i0], UVs[i0] };
-                Vertex v1 = { positions[i1], normals[i1], UVs[i1] };
-                Vertex v2 = { positions[i2], normals[i2], UVs[i2] };
+                Vertex v0 = { positions[i0], normals[i0], UVs[i0], tangent, bitangent};
+                Vertex v1 = { positions[i1], normals[i1], UVs[i1], tangent, bitangent};
+                Vertex v2 = { positions[i2], normals[i2], UVs[i2], tangent, bitangent};
 
                 // push triangle back
                 triangles.push_back({v0, v1, v2, centroid, matID});

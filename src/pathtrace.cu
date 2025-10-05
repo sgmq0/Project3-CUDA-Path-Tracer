@@ -159,6 +159,7 @@ void pathtraceInit(Scene* scene)
         texDesc.addressMode[0] = cudaAddressModeWrap;
         texDesc.addressMode[1] = cudaAddressModeWrap;
         texDesc.filterMode = cudaFilterModePoint;
+        //texDesc.filterMode = cudaFilterModeLinear;
         texDesc.readMode = cudaReadModeNormalizedFloat;
         texDesc.normalizedCoords = 1;
 
@@ -316,7 +317,7 @@ __global__ void computeIntersections(
         }
 
         // also consider mesh geo
-        t = bvhIntersectionTest(bvhNodes, triangles, pathSegment.ray, 0, tmp_intersect, tmp_normal, tmp_uv, outside, materialID);
+        t = bvhIntersectionTest(bvhNodes, triangles, pathSegment.ray, 0, tmp_intersect, tmp_normal, tmp_uv, outside, materialID, materials, textures);
         if (t > 0.0f && t_min > t)
         {
             t_min = t;
@@ -389,6 +390,7 @@ __global__ void shadeMaterial(
     PathSegment* pathSegments,
     MyMaterial* materials,
     cudaTextureObject_t* textures,
+    MyTexture* hostTextures,
     int depth)
 {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
@@ -419,18 +421,20 @@ __global__ void shadeMaterial(
                 
                 float alpha = 1.0f;
                 glm::vec3 color = materialColor;
+                glm::vec3 normal = intersection.surfaceNormal;
                 if (intersection.useUV) {
                     glm::vec2 uv = intersection.surfaceUV;
                     glm::vec4 col = sampleTexture(textures[material.colorTextureIdx], uv.x, uv.y);
                     alpha = col.a;
                     color = glm::vec3(col.x, col.y, col.z);
+
                 }
 
                 // if a transparent texture was found...
                 float rand = u01(rng);
                 if (rand < alpha) {
                     // do bsdf stuff
-                    scatterRay(pathSegments[idx], intersect, intersection.surfaceNormal, material, rng, color);
+                    scatterRay(pathSegments[idx], intersect, normal, material, rng, color);
                 }
                 else {
                     // teleport the ray to intersection point
@@ -609,6 +613,7 @@ void pathtrace(uchar4* pbo, int frame, int iter)
             dev_paths,
             dev_materials,
             dev_cudaTextures,
+            dev_textures,
             depth
         );
         checkCUDAError("shade material");

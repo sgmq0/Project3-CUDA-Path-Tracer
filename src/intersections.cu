@@ -123,6 +123,7 @@ bool intersectRayTriangleMT(
     glm::vec3 pvec = glm::cross(dir, v0v2);
     float det = glm::dot(v0v1, pvec);
 
+    // backface culling
     if (det < EPSILON) return false;
     if (fabs(det) < EPSILON) return false;
 
@@ -251,15 +252,18 @@ __host__ __device__ bool bboxIntersectionTest(Ray r, glm::vec3 bboxMin, glm::vec
     return t_max >= t_min && t_max > 0.0f;
 }
 
-__host__ __device__ float bvhIntersectionTest(BVHNode* bvhNodes,
+__device__ float bvhIntersectionTest(BVHNode* bvhNodes,
     Triangle* triangles,
     Ray r,
     int nodeIdx,
     glm::vec3& intersectionPoint,
     glm::vec3& normal,
     glm::vec2& uvCoord,
-    bool outside, 
-    int& materialID) {
+    bool outside,
+    int& materialID,
+    MyMaterial* materials,
+    cudaTextureObject_t* textures
+) {
     const int MAX_STACK_SIZE = 64;
     int stack[MAX_STACK_SIZE];
     int stackPtr = 0;
@@ -293,7 +297,7 @@ __host__ __device__ float bvhIntersectionTest(BVHNode* bvhNodes,
                 glm::vec3 v2 = tri.v2.position;
 
                 if (intersectRayTriangleMT(r.origin, r.direction, v0, v1, v2, tTemp, uTemp, vTemp)) {
-                    if (tTemp < closestT && tTemp > 0.0f) {
+                    if (tTemp < closestT && tTemp > EPSILON) {
                         closestT = tTemp;
                         u = uTemp;
                         v = vTemp;
@@ -315,11 +319,13 @@ __host__ __device__ float bvhIntersectionTest(BVHNode* bvhNodes,
     if (closestT < FLT_MAX) {
         float w = 1.0f - u - v;
 
-        // calculate normals
+        materialID = hitTri.materialID;
+
         glm::vec3 n0 = hitTri.v0.normal;
         glm::vec3 n1 = hitTri.v1.normal;
         glm::vec3 n2 = hitTri.v2.normal;
-        normal = glm::normalize(w * n0 + u * n1 + v * n2);
+        glm::vec3 geomNormal = glm::normalize(w * n0 + u * n1 + v * n2);
+        normal = geomNormal;
 
         // calculate UVs
         glm::vec2 uv0 = hitTri.v0.UV;
@@ -327,7 +333,21 @@ __host__ __device__ float bvhIntersectionTest(BVHNode* bvhNodes,
         glm::vec2 uv2 = hitTri.v2.UV;
         uvCoord = w * uv0 + u * uv1 + v * uv2;
 
-        materialID = hitTri.materialID;
+        if (materials[materialID].useNormalMap) {
+            glm::vec3 T = glm::normalize(w * hitTri.v0.tangent + u * hitTri.v1.tangent + v * hitTri.v2.tangent);
+            glm::vec3 B = glm::normalize(w * hitTri.v0.bitangent + u * hitTri.v1.bitangent + v * hitTri.v2.bitangent);
+            glm::vec3 N = glm::normalize(w * hitTri.v0.normal + u * hitTri.v1.normal + v * hitTri.v2.normal);
+            glm::mat3 TBN = glm::mat3(T, B, N);
+
+            // sample normal map
+            int normalMapIdx = materials[materialID].normalTextureIdx;
+            float4 norm = tex2D<float4>(textures[normalMapIdx], uvCoord.x, uvCoord.y);
+            glm::vec3 normalMapValue = glm::vec3(norm.x, norm.y, norm.z);
+            glm::vec3 tangentNormal = normalMapValue * 2.0f - 1.0f;
+
+            normal = glm::normalize(TBN * tangentNormal);
+        }
+
         return closestT;
     }
 
