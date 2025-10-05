@@ -1,4 +1,8 @@
 {
+    "Scene":
+    {
+        "ENVIRONMENT": "../scenes/hdris/qwantani_sunset_puresky_4k.hdr"
+    },
     "Materials":
     {
         "light":
@@ -47,41 +51,6 @@
     },
     "Objects":
     [
-        {
-            "TYPE":"cube",
-            "MATERIAL":"sky",
-            "TRANS":[0.0,0.0,0.0],
-            "ROTAT":[0.0,0.0,0.0],
-            "SCALE":[10.0,0.01,10.0]
-        },
-        {
-            "TYPE":"cube",
-            "MATERIAL":"sky",
-            "TRANS":[0.0,10.0,0.0],
-            "ROTAT":[0.0,0.0,90.0],
-            "SCALE":[0.01,10.0,10.0]
-        },
-        {
-            "TYPE":"cube",
-            "MATERIAL":"sky",
-            "TRANS":[0.0,5.0,-5.0],
-            "ROTAT":[0.0,90.0,0.0],
-            "SCALE":[0.01,10.0,10.0]
-        },
-        {
-            "TYPE":"cube",
-            "MATERIAL":"sky",
-            "TRANS":[-5.0,5.0,0.0],
-            "ROTAT":[0.0,0.0,0.0],
-            "SCALE":[0.01,10.0,10.0]
-        },
-        {
-            "TYPE":"cube",
-            "MATERIAL":"sky",
-            "TRANS":[5.0,5.0,0.0],
-            "ROTAT":[0.0,0.0,0.0],
-            "SCALE":[0.01,10.0,10.0]
-        },
         {
             "TYPE":"mesh",
             "MATERIAL":"diffuse_white",

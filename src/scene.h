@@ -25,4 +25,7 @@ public:
     std::vector<cudaTextureObject_t> cudaTextures;
     int numTriangles;
     int nodesUsed;
+
+    // HDRI
+    HDRI environment;
 };

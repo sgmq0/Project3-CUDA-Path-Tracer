@@ -136,3 +136,10 @@ struct MyTexture
     int components;
     unsigned char* image;
 };
+
+struct HDRI
+{
+    int width;
+    int height;
+    std::vector<glm::vec3> image;
+};

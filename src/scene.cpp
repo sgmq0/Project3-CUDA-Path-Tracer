@@ -11,6 +11,12 @@
 #include <string>
 #include <unordered_map>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <stb_image_write.h>
+
 using namespace std;
 using json = nlohmann::json;
 
@@ -236,6 +242,31 @@ void Scene::loadFromJSON(const std::string& jsonName)
     // build bvh once all tris are loaded
     buildBVH();
 	std::cout << "BVH build complete. Total nodes used: " << nodesUsed << "\n";
+
+    // load environment map
+    const auto& sceneData = data["Scene"];
+    std::string envMapPath = sceneData["ENVIRONMENT"];
+    const char* envMapPathCstring = envMapPath.c_str();
+    int width, height, numComponents;
+    float* loadedData = stbi_loadf(envMapPathCstring, &width, &height, &numComponents, 3);
+
+    // build hdri
+    if (loadedData) {
+        std::cout << "Loaded HDR image: " << width << "x" << height << " channels: " << numComponents << "\n";
+
+        environment.height = height;
+        environment.width = width;
+        environment.image.resize(width * height);
+
+        for (int i = 0; i < width * height; i++) {
+            environment.image[i] = glm::vec3(loadedData[i * 3], loadedData[i * 3 + 1], loadedData[i * 3 + 2]);
+        }
+
+        stbi_image_free(loadedData); // free image we loaded
+    }
+    else {
+        std::cerr << "Failed to load HDR environment map: " << envMapPath << "\n";
+    }
 
     //camera stuff (given in base code)
     const auto& cameraData = data["Camera"];

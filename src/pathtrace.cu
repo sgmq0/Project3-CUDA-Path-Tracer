@@ -95,6 +95,7 @@ static Triangle* dev_triangles = NULL;
 static BVHNode* dev_bvhNodes = NULL;
 static MyTexture* dev_textures = NULL;
 static cudaTextureObject_t* dev_cudaTextures = NULL;
+static glm::vec3* dev_environmentMap = NULL;
 
 static std::vector<cudaTextureObject_t> cudaTextures;
 static std::vector<cudaArray_t> cudaArrays;
@@ -174,6 +175,11 @@ void pathtraceInit(Scene* scene)
     cudaMemcpy(dev_cudaTextures, cudaTextures.data(), cudaTextures.size() * sizeof(cudaTextureObject_t),
         cudaMemcpyHostToDevice);
 
+    // initialize environment map
+    cudaMalloc(&dev_environmentMap, scene->environment.image.size() * sizeof(glm::vec3));
+    cudaMemcpy(dev_environmentMap, scene->environment.image.data(), 
+        scene->environment.image.size() * sizeof(glm::vec3), cudaMemcpyHostToDevice);
+
     checkCUDAError("pathtraceInit");
 }
 
@@ -189,6 +195,7 @@ void pathtraceFree()
     cudaFree(dev_triangles);
     cudaFree(dev_bvhNodes);
     cudaFree(dev_textures);
+    cudaFree(dev_environmentMap);
 
     for (auto texObj : cudaTextures) {
         cudaDestroyTextureObject(texObj);
@@ -383,6 +390,12 @@ __device__ float squareToHemisphereCosinePDF(glm::vec3 sample) {
     return sample.z / PI;
 }
 
+__device__ glm::vec3 sampleEnvironmentMap(glm::vec3* map, int env_width, int env_height, float u, float v) {
+    int x = glm::clamp(int(u * env_width), 0, env_width - 1);
+    int y = glm::clamp(int(v * env_height), 0, env_height - 1);
+    return map[y * env_width + x];
+}
+
 __global__ void shadeMaterial(
     int iter,
     int num_paths,
@@ -391,8 +404,10 @@ __global__ void shadeMaterial(
     MyMaterial* materials,
     cudaTextureObject_t* textures,
     MyTexture* hostTextures,
-    int depth)
-{
+    int depth,
+    glm::vec3* environmentMap,
+    int envWidth, int envHeight
+){
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx < num_paths)
     {
@@ -449,7 +464,24 @@ __global__ void shadeMaterial(
         }
         else {
             pathSegments[idx].remainingBounces = 0;
-            pathSegments[idx].color = glm::vec3(0.0f);
+
+            // sample environment map
+            glm::vec3 dir = pathSegments[idx].ray.direction;
+
+            float u = 0.5f + atan2(dir.z, dir.x) * 0.5f * INV_PI;
+            float v = 0.5f - asin(dir.y) * INV_PI;
+
+            // wrap uvs
+            u = glm::fract(u);
+            v = glm::clamp(v, 0.0f, 1.0f);
+
+            glm::vec3 env_color = sampleEnvironmentMap(environmentMap, envWidth, envHeight, u, v);
+
+            //tonemapping and gamma correction
+            env_color = env_color / (env_color + glm::vec3(1.0f));
+            env_color = glm::pow(env_color, glm::vec3(1.0f / 2.2f));
+
+            pathSegments[idx].color *= env_color;
         }
     }
 
@@ -563,6 +595,8 @@ void pathtrace(uchar4* pbo, int frame, int iter)
     int num_paths_orig = num_paths;
     int num_triangles = hst_scene->numTriangles;
     int num_textures = hst_scene->textures.size();
+    int env_width = hst_scene->environment.width; 
+    int env_height = hst_scene->environment.height;
 
     // --- PathSegment Tracing Stage ---
     // Shoot ray into scene, bounce between objects, push shading chunks
@@ -614,7 +648,9 @@ void pathtrace(uchar4* pbo, int frame, int iter)
             dev_materials,
             dev_cudaTextures,
             dev_textures,
-            depth
+            depth,
+            dev_environmentMap,
+            env_width, env_height
         );
         checkCUDAError("shade material");
         cudaDeviceSynchronize();
