@@ -203,6 +203,8 @@ bool LoadGLTF(const std::string& filename,
         MyTexture loadedTexture;
         const auto& image = model.images[gltfTexture.source];
         loadedTexture.components = image.component;
+        std::cout << image.component << std::endl;
+
         loadedTexture.width = image.width;
         loadedTexture.height = image.height;
 

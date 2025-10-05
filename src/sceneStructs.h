@@ -101,6 +101,7 @@ struct ShadeableIntersection
   glm::vec2 surfaceUV;
   bool useUV;
   int materialId;
+  bool rejectedByAlpha;
 };
 
 struct Vertex {

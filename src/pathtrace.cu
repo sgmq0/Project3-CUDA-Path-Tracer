@@ -158,7 +158,7 @@ void pathtraceInit(Scene* scene)
         cudaTextureDesc texDesc = {};
         texDesc.addressMode[0] = cudaAddressModeWrap;
         texDesc.addressMode[1] = cudaAddressModeWrap;
-        texDesc.filterMode = cudaFilterModeLinear;
+        texDesc.filterMode = cudaFilterModePoint;
         texDesc.readMode = cudaReadModeNormalizedFloat;
         texDesc.normalizedCoords = 1;
 
@@ -243,6 +243,11 @@ __global__ void generateRayFromCamera(Camera cam, int iter, int traceDepth, Path
     }
 }
 
+__device__ glm::vec4 sampleTexture(cudaTextureObject_t texture, float u, float v) {
+    float4 col = tex2D<float4>(texture, u, v);
+    return glm::vec4(col.x, col.y, col.z, col.w);
+}
+
 // TODO:
 // computeIntersections handles generating ray intersections ONLY.
 // Generating new rays is handled in your shader(s).
@@ -256,7 +261,9 @@ __global__ void computeIntersections(
     ShadeableIntersection* intersections,
     Triangle* triangles,
     int numTriangles,
-    BVHNode* bvhNodes)
+    BVHNode* bvhNodes,
+    Material* materials,
+    cudaTextureObject_t* textures)
 {
     int path_index = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -319,6 +326,18 @@ __global__ void computeIntersections(
             intersections[path_index].materialId = materialID;
             hitMesh = true;
         }
+
+        // if an alpha value was hit...
+        //if (hitMesh) {
+        //    Material material = materials[materialID];
+        //    glm::vec4 col = sampleTexture(textures[material.colorTextureIdx], uv.x, uv.y);
+        //    if (col.a < 0.1f) {
+        //        intersections[path_index].rejectedByAlpha = true;
+        //    }
+        //    else {
+        //        intersections[path_index].rejectedByAlpha = false;
+        //    }
+        //}
 
         if (hit_geom_index == -1)
         {
@@ -407,15 +426,25 @@ __global__ void shadeMaterial(
                 //calculate intersect
                 glm::vec3 intersect = pathSegments[idx].ray.origin + glm::normalize(pathSegments[idx].ray.direction) * intersection.t;
                 
+                float alpha = 1.0f;
                 glm::vec3 color = materialColor;
                 if (intersection.useUV) {
                     glm::vec2 uv = intersection.surfaceUV;
-                    float4 col = tex2D<float4>(textures[material.colorTextureIdx], uv.x, uv.y);
+                    glm::vec4 col = sampleTexture(textures[material.colorTextureIdx], uv.x, uv.y);
+                    alpha = col.a;
                     color = glm::vec3(col.x, col.y, col.z);
                 }
 
-                // do bsdf stuff
-                scatterRay(pathSegments[idx], intersect, intersection.surfaceNormal, material, rng, color);
+                // if a transparent texture was found...
+                float rand = u01(rng);
+                if (rand < alpha) {
+                    // do bsdf stuff
+                    scatterRay(pathSegments[idx], intersect, intersection.surfaceNormal, material, rng, color);
+                }
+                else {
+                    // teleport the ray to intersection point
+                    pathSegments[idx].ray.origin = intersect + EPSILON * pathSegments[idx].ray.direction;
+                }
             }
 
             // If there was no intersection, color the ray black.
@@ -559,7 +588,9 @@ void pathtrace(uchar4* pbo, int frame, int iter)
             dev_intersections,
             dev_triangles,
             num_triangles,
-            dev_bvhNodes
+            dev_bvhNodes,
+            dev_materials,
+            dev_cudaTextures
         );
         checkCUDAError("trace one bounce");
         cudaDeviceSynchronize();
