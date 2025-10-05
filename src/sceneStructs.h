@@ -97,6 +97,8 @@ struct ShadeableIntersection
 {
   float t;
   glm::vec3 surfaceNormal;
+  glm::vec2 surfaceUV;
+  bool useUV;
   int materialId;
 };
 
@@ -118,4 +120,13 @@ struct BVHNode
     int leftChild, rightChild;
     bool isLeaf;
     int firstPrim, primCount;
+};
+
+// goofy name because conflicts with gltf texture struct
+struct MyTexture
+{
+    int width;
+    int height;
+    int components;
+    unsigned char* image;
 };

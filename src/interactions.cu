@@ -84,13 +84,32 @@ __host__ __device__ glm::vec3 fresnelDielectricEval(float cosThetaI) {
     return glm::vec3((Rparl * Rparl + Rperp * Rperp) / 2.0);
 }
 
+__host__ __device__ glm::vec3 sampleMyTexture(const MyTexture& texture, glm::vec2 uv) {
+    //clamp UVs
+    uv = glm::clamp(uv, glm::vec2(0.0f), glm::vec2(1.0f));
+
+    int x = static_cast<int>(uv.x * (texture.width - 1));
+    int y = static_cast<int>(uv.y * (texture.height - 1));
+
+    int idx = (y * texture.width + x) * texture.components;
+
+    unsigned char* pixel = &texture.image[idx];
+
+    glm::vec3 color;
+    color.r = pixel[0] / 255.0f;
+    color.g = pixel[1] / 255.0f;
+    color.b = pixel[2] / 255.0f;
+
+    return color;
+}
 
 __host__ __device__ void scatterRay(
     PathSegment & pathSegment,
     glm::vec3 intersect,
     glm::vec3 normal,
     const Material &m,
-    thrust::default_random_engine &rng)
+    thrust::default_random_engine &rng,
+    glm::vec3 color)
 {
     glm::vec3 newDirection = glm::vec3();
 
@@ -138,8 +157,7 @@ __host__ __device__ void scatterRay(
         newDirection = reflect_direction(normal, pathSegment.ray.direction);
     }
 
-    // set new ray
-    pathSegment.color *= m.color;
+    pathSegment.color *= color;
     pathSegment.ray.origin = intersect + EPSILON * newDirection;
     pathSegment.ray.direction = newDirection;
 

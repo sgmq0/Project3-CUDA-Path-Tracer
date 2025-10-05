@@ -11,6 +11,7 @@ using namespace tinygltf;
 
 bool LoadGLTF(const std::string& filename, 
     std::vector<Triangle>& triangles, 
+    std::vector<MyTexture>& textures,
     glm::mat4 transform, 
     int materialID
 ) {
@@ -42,27 +43,25 @@ bool LoadGLTF(const std::string& filename,
     return false;
     }
 
-    std::cout << "loaded glTF file has:\n"
-    << model.accessors.size() << " accessors\n"
-    << model.animations.size() << " animations\n"
-    << model.buffers.size() << " buffers\n"
-    << model.bufferViews.size() << " bufferViews\n"
-    << model.materials.size() << " materials\n"
-    << model.meshes.size() << " meshes\n"
-    << model.nodes.size() << " nodes\n"
-    << model.textures.size() << " textures\n"
-    << model.images.size() << " images\n"
-    << model.skins.size() << " skins\n"
-    << model.samplers.size() << " samplers\n"
-    << model.cameras.size() << " cameras\n"
-    << model.scenes.size() << " scenes\n"
-    << model.lights.size() << " lights\n";
+    //std::cout << "loaded glTF file has:\n"
+    //<< model.accessors.size() << " accessors\n"
+    //<< model.animations.size() << " animations\n"
+    //<< model.buffers.size() << " buffers\n"
+    //<< model.bufferViews.size() << " bufferViews\n"
+    //<< model.materials.size() << " materials\n"
+    //<< model.meshes.size() << " meshes\n"
+    //<< model.nodes.size() << " nodes\n"
+    //<< model.textures.size() << " textures\n"
+    //<< model.images.size() << " images\n"
+    //<< model.skins.size() << " skins\n"
+    //<< model.samplers.size() << " samplers\n"
+    //<< model.cameras.size() << " cameras\n"
+    //<< model.scenes.size() << " scenes\n"
+    //<< model.lights.size() << " lights\n";
 
     glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(transform)));
 
     for (const auto& gltfMesh : model.meshes) {
-        std::cout << "Current mesh has " << gltfMesh.primitives.size() << " primitives:\n";
-
         // Create a mesh object
         Mesh loadedMesh;
 
@@ -199,9 +198,20 @@ bool LoadGLTF(const std::string& filename,
     }
 
     // iterate through all the textures
-    
+    for (const auto& gltfTexture : model.textures) {
+        std::cout << "Found texture!\n";
+        MyTexture loadedTexture;
+        const auto& image = model.images[gltfTexture.source];
+        loadedTexture.components = image.component;
+        loadedTexture.width = image.width;
+        loadedTexture.height = image.height;
 
-    std::cout << "Loaded " << triangles.size() << " triangles.\n";
+        const auto size =
+            image.component * image.width * image.height * sizeof(unsigned char);
+        loadedTexture.image = new unsigned char[size];
+        memcpy(loadedTexture.image, image.image.data(), size);
+        textures.push_back(loadedTexture);
+    }
 
     return true;
 

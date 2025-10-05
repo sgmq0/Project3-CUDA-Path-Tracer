@@ -251,13 +251,13 @@ __host__ __device__ bool bboxIntersectionTest(Ray r, glm::vec3 bboxMin, glm::vec
     return t_max >= t_min && t_max > 0.0f;
 }
 
-__host__ __device__ float bvhIntersectionTest(BVHNode* bvhNodes, 
-    Triangle* triangles, 
-    glm::vec3* positions,
-    Ray r, 
+__host__ __device__ float bvhIntersectionTest(BVHNode* bvhNodes,
+    Triangle* triangles,
+    Ray r,
     int nodeIdx,
-    glm::vec3& intersectionPoint, 
-    glm::vec3& normal, 
+    glm::vec3& intersectionPoint,
+    glm::vec3& normal,
+    glm::vec2& uvCoord,
     bool outside, 
     int& materialID) {
     const int MAX_STACK_SIZE = 64;
@@ -311,14 +311,19 @@ __host__ __device__ float bvhIntersectionTest(BVHNode* bvhNodes,
         }
     }
 
-    // calculate normals
+    // calculate normals and UVs
     if (closestT < FLT_MAX) {
         glm::vec3 n0 = hitTri.v0.normal;
         glm::vec3 n1 = hitTri.v1.normal;
         glm::vec3 n2 = hitTri.v2.normal;
 
+        glm::vec2 uv0 = hitTri.v0.UV;
+        glm::vec2 uv1 = hitTri.v1.UV;
+        glm::vec2 uv2 = hitTri.v2.UV;
+
         float w = 1.0f - u - v;
         normal = glm::normalize(w * n0 + u * n1 + v * n2);
+        uvCoord = w * uv0 + u * uv1 + v * uv2;
 
         materialID = hitTri.materialID;
         return closestT;

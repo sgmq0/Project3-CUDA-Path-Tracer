@@ -9,6 +9,7 @@
 
 bool LoadGLTF(const std::string& filename, 
     std::vector<Triangle>& triangles, 
+    std::vector<MyTexture>& textures,
     glm::mat4 transform, 
     int materialID);
 

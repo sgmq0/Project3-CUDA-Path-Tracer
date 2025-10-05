@@ -214,7 +214,7 @@ void Scene::loadFromJSON(const std::string& jsonName)
             std::string file = p["FILENAME"];
 
             // apply transformation matrix and material to loaded triangle
-		    LoadGLTF(file, triangles, newGeom.transform, newGeom.materialid);
+		    LoadGLTF(file, triangles, textures, newGeom.transform, newGeom.materialid);
             numTriangles = triangles.size();
         }
         else
@@ -234,11 +234,6 @@ void Scene::loadFromJSON(const std::string& jsonName)
     // build bvh once all tris are loaded
     buildBVH();
 	std::cout << "BVH build complete. Total nodes used: " << nodesUsed << "\n";
-
-    // print all centroids
-    //for (int i = 0; i < numTriangles; i++) {
-    //    std::cout << "Triangle " << i << " centroid: " << glm::to_string(triangles[i].centroid) << "\n";
-    //}
 
     //camera stuff (given in base code)
     const auto& cameraData = data["Camera"];

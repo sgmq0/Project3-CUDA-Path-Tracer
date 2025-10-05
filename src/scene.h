@@ -20,10 +20,9 @@ public:
 
     // bvh stuff
     std::vector<Triangle> triangles;
-    std::vector<glm::vec3> positions;
-    std::vector<glm::vec3> normals;
-
-    int numTriangles;
     std::vector<BVHNode> bvhNodes;
+    std::vector<MyTexture> textures;
+    std::vector<cudaTextureObject_t> cudaTextures;
+    int numTriangles;
     int nodesUsed;
 };
