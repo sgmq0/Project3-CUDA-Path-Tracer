@@ -15,7 +15,8 @@ bool LoadGLTF(const std::string& filename,
     std::vector<MyMaterial>& materials,
     std::unordered_map<std::string, uint32_t>& materialMap,
     glm::mat4 transform, 
-    int materialID
+    int materialID,
+    bool useMaterial
 ) {
     tinygltf::Model model;
     tinygltf::TinyGLTF loader;
@@ -44,22 +45,6 @@ bool LoadGLTF(const std::string& filename,
     std::cerr << "Failed to load glTF: " << filename << std::endl;
     return false;
     }
-
-    //std::cout << "loaded glTF file has:\n"
-    //<< model.accessors.size() << " accessors\n"
-    //<< model.animations.size() << " animations\n"
-    //<< model.buffers.size() << " buffers\n"
-    //<< model.bufferViews.size() << " bufferViews\n"
-    //<< model.materials.size() << " materials\n"
-    //<< model.meshes.size() << " meshes\n"
-    //<< model.nodes.size() << " nodes\n"
-    //<< model.textures.size() << " textures\n"
-    //<< model.images.size() << " images\n"
-    //<< model.skins.size() << " skins\n"
-    //<< model.samplers.size() << " samplers\n"
-    //<< model.cameras.size() << " cameras\n"
-    //<< model.scenes.size() << " scenes\n"
-    //<< model.lights.size() << " lights\n";
 
     glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(transform)));
 
@@ -92,6 +77,7 @@ bool LoadGLTF(const std::string& filename,
         newMaterial.color = glm::vec3(1.0f, 0.0f, 1.0f);
         newMaterial.type = DIFFUSE;
         newMaterial.useNormalMap = false;
+        newMaterial.useUV = true;
 
         materialMap[gltfMaterial.name] = materials.size();
         int meshMatID = materialMap[gltfMaterial.name];
@@ -287,6 +273,9 @@ bool LoadGLTF(const std::string& filename,
                 Vertex v2 = { positions[i2], normals[i2], UVs[i2], tangent, bitangent};
 
                 // push triangle back
+                if (useMaterial) {
+                    matID = materialID;
+                }
                 triangles.push_back({v0, v1, v2, centroid, matID});
             }
         }

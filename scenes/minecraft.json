@@ -54,7 +54,7 @@
         {
             "TYPE":"mesh",
             "MATERIAL":"diffuse_white",
-            "FILENAME": "../meshes/forunreal.glb",
+            "FILENAME": "../meshes/minecraft_world.glb",
             "TRANS":[0.0,2.0,0.0],
             "ROTAT":[-90.0,0,0.0],
             "SCALE":[2,2,2]

@@ -44,7 +44,7 @@
         "reflective_magenta":
         {
             "TYPE": "SPECULAR",
-            "ALBEDO":[0.98, 0.98, 0.98]
+            "ALBEDO":[0.98, 0.35, 0.98]
         },
         "transmissive_yellow":
         {
@@ -68,7 +68,6 @@
     [
         {
             "TYPE":"mesh", 
-            "MATERIAL":"reflective_magenta",
             "FILENAME": "../meshes/DragonAttenuation.glb",
             "TRANS":[0.0,2.0,0.0],
             "ROTAT":[90.0,0.0,0.0],

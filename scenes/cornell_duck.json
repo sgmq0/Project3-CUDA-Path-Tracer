@@ -1,4 +1,8 @@
 {
+    "Scene":
+    {
+        "ENVIRONMENT": "../scenes/hdris/qwantani_sunset_puresky_4k.hdr"
+    },
     "Materials":
     {
         "light":
@@ -62,51 +66,9 @@
     },
     "Objects":
     [
-        {
-            "TYPE":"cube",
-            "MATERIAL":"light",
-            "TRANS":[0.0,10.0,0.0],
-            "ROTAT":[0.0,0.0,0.0],
-            "SCALE":[3.0,0.3,3.0]
-        },
-        {
-            "TYPE":"cube",
-            "MATERIAL":"diffuse_white",
-            "TRANS":[0.0,0.0,0.0],
-            "ROTAT":[0.0,0.0,0.0],
-            "SCALE":[10.0,0.01,10.0]
-        },
-        {
-            "TYPE":"cube",
-            "MATERIAL":"diffuse_white",
-            "TRANS":[0.0,10.0,0.0],
-            "ROTAT":[0.0,0.0,90.0],
-            "SCALE":[0.01,10.0,10.0]
-        },
-        {
-            "TYPE":"cube",
-            "MATERIAL":"diffuse_white",
-            "TRANS":[0.0,5.0,-5.0],
-            "ROTAT":[0.0,90.0,0.0],
-            "SCALE":[0.01,10.0,10.0]
-        },
-        {
-            "TYPE":"cube",
-            "MATERIAL":"diffuse_red",
-            "TRANS":[-5.0,5.0,0.0],
-            "ROTAT":[0.0,0.0,0.0],
-            "SCALE":[0.01,10.0,10.0]
-        },
-        {
-            "TYPE":"cube",
-            "MATERIAL":"diffuse_green",
-            "TRANS":[5.0,5.0,0.0],
-            "ROTAT":[0.0,0.0,0.0],
-            "SCALE":[0.01,10.0,10.0]
-        },
+        
         {
             "TYPE":"mesh", 
-            "MATERIAL":"reflective_magenta",
             "FILENAME": "../meshes/Duck.glb",
             "TRANS":[0.0,2.0,0.0],
             "ROTAT":[0.0,-45.0,0.0],

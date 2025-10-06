@@ -3,31 +3,32 @@ CUDA Path Tracer
 
 **University of Pennsylvania, CIS 565: GPU Programming and Architecture, Project 3**
 
-* (TODO) YOUR NAME HERE
-* Tested on: (TODO) Windows 22, i7-2222 @ 2.22GHz 22GB, GTX 222 222MB (Moore 2222 Lab)
+* Raymond Feng
+  * [LinkedIn](https://www.linkedin.com/in/raymond-ma-feng/), [personal website](https://www.rfeng.dev/)
+* Tested on: Windows 11, i9-9900KF @ 3.60GHz 32GB, NVIDIA GeForce RTX 2070 SUPER (Personal Computer)
 
-### (TODO: Your README)
+![](img/cover_image.png)
 
-*DO NOT* leave the README to the last minute! It is a crucial part of the
-project, and we will not be able to grade you without a good README.
-
-Features 
+## Core Features
 - Stream Compaction
 - BSDF evaluation for diffuse and perfectly specular surfaces
 - Stochastic sampled anti aliasing
 - Material sorting
+
+## Additional Features
+**Visual Improvements**
 - (2) refractive materials (glass)
-- (1) russian roulette path termination
+- (5) texture mapping (albedo + normals)
+- (2) Environment maps
+**Mesh Improvements**
 - (4) GLTF loading
+**Performance Improvements**
+- (1) Russian roulette path termination
 - (6) BVH structure
-- (5?) Texture mapping
-- Need to implement bump/normal mapping...
 
-IMPLEMENTATION NOTES:
-- gltf loading loads every triangle into a vector stored in the scene object
-- whichever geom object is loaded, if it's a mesh, stores the start and end index of the mesh's corresponding triangles. this is so each geom can be transformed independently of each other based on the json
-
-SOURCES:
+**SOURCES:**
 - pbr textbook
 - https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/moller-trumbore-ray-triangle-intersection.html
 - https://tavianator.com/2022/ray_box_boundary.html
+- https://jacco.ompf2.com/2022/04/13/how-to-build-a-bvh-part-1-basics/
+- https://www.khronos.org/files/gltf20-reference-guide.pdf

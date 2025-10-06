@@ -61,6 +61,7 @@ struct MyMaterial
     float emittance;
     int colorTextureIdx;
 
+    bool useUV;
     bool useNormalMap;
     int normalTextureIdx;
 };

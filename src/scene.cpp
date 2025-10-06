@@ -193,9 +193,14 @@ void Scene::loadFromJSON(const std::string& jsonName)
     for (const auto& p : objectsData)
     {
         Geom newGeom;
+        bool useMaterial = false;
 
-        // set material ID
-        newGeom.materialid = MatNameToID[p["MATERIAL"]];
+        // if a material is specified, use that instead of the textures
+        if (p.contains("MATERIAL")) {
+            newGeom.materialid = MatNameToID[p["MATERIAL"]];
+            useMaterial = true;
+            materials[newGeom.materialid].useUV = false;
+        }
 
         // find transform vec3s
         const auto& trans = p["TRANS"];
@@ -221,7 +226,7 @@ void Scene::loadFromJSON(const std::string& jsonName)
             std::string file = p["FILENAME"];
 
             // apply transformation matrix and material to loaded triangle
-		    LoadGLTF(file, triangles, textures, materials, MatNameToID, newGeom.transform, 0);
+		    LoadGLTF(file, triangles, textures, materials, MatNameToID, newGeom.transform, newGeom.materialid, useMaterial);
 
             numTriangles = triangles.size();
         }

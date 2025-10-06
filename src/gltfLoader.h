@@ -13,6 +13,7 @@ bool LoadGLTF(const std::string& filename,
     std::vector<MyMaterial>& materials,
     std::unordered_map<std::string, uint32_t>& materialMap,
     glm::mat4 transform,
-    int materialID);
+    int materialID,
+    bool useMaterial);
 
 #endif
