@@ -20,8 +20,10 @@ CUDA Path Tracer
 - (2) refractive materials (glass)
 - (5) texture mapping (albedo + normals)
 - (2) Environment maps
+
 **Mesh Improvements**
 - (4) GLTF loading
+
 **Performance Improvements**
 - (1) Russian roulette path termination
 - (6) BVH structure
