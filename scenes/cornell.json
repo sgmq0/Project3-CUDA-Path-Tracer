@@ -1,4 +1,8 @@
 {
+    "Scene":
+    {
+        "ENVIRONMENT": "../scenes/hdris/qwantani_sunset_puresky_4k.hdr"
+    },
     "Materials":
     {
         "light":
