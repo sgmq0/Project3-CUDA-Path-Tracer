@@ -109,11 +109,12 @@
             "SCALE":[0.01,10.0,10.0]
         },
         {
-            "TYPE":"sphere",
-            "MATERIAL":"diffuse_white",
-            "TRANS":[0.0,3.0,0.0],
-            "ROTAT":[0.0,0.0,0.0],
-            "SCALE":[3.0,3.0,3.0]
+            "TYPE":"mesh", 
+            "MATERIAL": "diffuse_white",
+            "FILENAME": "../meshes/DragonAttenuation.glb",
+            "TRANS":[0.0,2.0,0.0],
+            "ROTAT":[90.0,0.0,0.0],
+            "SCALE":[0.7,0.7,0.7]
         }
     ]
 }
