@@ -61,9 +61,9 @@ I modified the `Scene` class to load in a `HDRI` object, which contains an image
 | ------------- | ------------- |
 | ![](img/cornell_env_off.png) | ![](img/cornell_env_on.png) |
 
-| Sunset     | Clear Skies |
+| Studio     | Cloudy Sky |
 | ------------- | ------------- |
-| ![](img/cover_image.png) | ![](img/cover_image.png) |
+| ![](img/env_map_studio.png) | ![](img/env_map_clouds.png) |
 
 ## GLTF Loading
 
@@ -73,15 +73,15 @@ I modified the `Scene` class to load in a `HDRI` object, which contains an image
 | ![](img/cover_image.png) | ![](img/cover_image.png) |
 
 ## Texture Mapping (Albedo + Normals)
-In a `.glb` file, each material stores the indices of its associated texture maps. For example, its albedo texture might be located at index 0, and its normal texture might be associated at index 1. Inside the `MyMaterial` struct, `colorTextureIdx` and `normalTextureIdx` keeps track of these indices.
+In a `.glb` file, each material stores the indices of its associated texture maps. For example, its albedo texture might be located at index 0, and its normal texture might be located at index 1. Inside the `MyMaterial` struct, `colorTextureIdx` and `normalTextureIdx` keeps track of these indices.
 
-After iterating through each texture in order and loading it into our scene, we can access array of `MyTexture` objects using the indices stored in `MyMaterial`. Each `Triangle` is also assigned an ID corresponding to the `MyMaterial` it should have.
+After iterating through each texture in order and loading it into our scene, we can access an array of `MyTexture` objects using the indices stored in `MyMaterial`. Each `Triangle` is also assigned an ID corresponding to the `MyMaterial` it should have.
 
 In the shading step, the interpolated UVs are used to sample the correct texture map.
 
 | Texture Mapping      | Texture + Normal Mapping |
 | ------------- | ------------- |
-| ![](img/cover_image.png) | ![](img/cover_image.png) |
+| ![](img/normal_maps_off.png) | ![](img/normal_maps_on.png) |
 
 ### Normals
 To calculate how a normal map affects the computed normal of an intersection point, I store the normal, tangent, and bitangent vectors of every vertex, which are pre-computed during BVH loading. 
