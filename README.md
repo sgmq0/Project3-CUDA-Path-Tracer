@@ -42,16 +42,15 @@ When a ray is casted from the camera into the screen, its direction lands at the
 ## Refractive Materials
 With refractive materials, light passes through the object, sampling the scene behind and around it. When a ray enters an object, it is *refracted* in a direction calculated by Snell's law using the incoming ray direction and the material's index of refraction. When the ray exits the object, it is refracted again. 
 
-| Glass (IOR: 1.500)      | Diamond (IOR: 2.418)    |
-| ------------- | ------------- |
-| ![](img/cover_image.png) | ![](img/cover_image.png) |
-
-### Refraction and transmission
 In real life, materials are often both refractive and transmissive. We represent this by randomly choosing to sample a reflected direction or a refracted direction, with the ![Fresnel factor](https://pbr-book.org/4ed/Reflection_Models/Specular_Reflection_and_Transmission) as the threshold. Combined, this results in a convincing transmissive surface.
 
-| Sphere (IOR: 1.500)      | Various Objects |
+| Glass (IOR: 1.500)      | Diamond (IOR: 2.418)    |
 | ------------- | ------------- |
-| ![](img/cover_image.png) | ![](img/cover_image.png) |
+| ![](img/refraction_sphere_1.png) | ![](img/refraction_sphere_2.png) |
+
+| Spheres and Cubes     | Various Objects |
+| ------------- | ------------- |
+| ![](img/refraction_gems_1.png) | ![](img/refraction_gems_2.png) |
 
 ## Environment Maps
 Without an environment map, any ray that does not hit any object in the scene returns the color black. Using an environment map, we can sample an image instead. The result is a convincing-looking sky.
@@ -60,7 +59,7 @@ I modified the `Scene` class to load in a `HDRI` object, which contains an image
 
 | No Environment Map      | Environment Map |
 | ------------- | ------------- |
-| ![](img/cover_image.png) | ![](img/cover_image.png) |
+| ![](img/cornell_env_off.png) | ![](img/cornell_env_on.png) |
 
 | Sunset     | Clear Skies |
 | ------------- | ------------- |
@@ -74,6 +73,12 @@ I modified the `Scene` class to load in a `HDRI` object, which contains an image
 | ![](img/cover_image.png) | ![](img/cover_image.png) |
 
 ## Texture Mapping (Albedo + Normals)
+In a `.glb` file, each material stores the indices of its associated texture maps. For example, its albedo texture might be located at index 0, and its normal texture might be associated at index 1. Inside the `MyMaterial` struct, `colorTextureIdx` and `normalTextureIdx` keeps track of these indices.
+
+After iterating through each texture in order and loading it into our scene, we can access array of `MyTexture` objects using the indices stored in `MyMaterial`. Each `Triangle` is also assigned an ID corresponding to the `MyMaterial` it should have.
+
+In the shading step, the interpolated UVs are used to sample the correct texture map.
+
 | Texture Mapping      | Texture + Normal Mapping |
 | ------------- | ------------- |
 | ![](img/cover_image.png) | ![](img/cover_image.png) |
@@ -83,13 +88,9 @@ To calculate how a normal map affects the computed normal of an intersection poi
 
 When the intersection is calculated, I first find the interpolated normal, tangent, and bitangent, then compute a TBN transformation matrix. Using the interpolated UV coordinates, I sample the normal texture then apply the TBN transformation to it. The transformed normal is returned during the intersection calculation step.
 
-| Texture Mapping      | Texture + Normal Mapping |
-| ------------- | ------------- |
-| ![](img/cover_image.png) | ![](img/cover_image.png) |
-
-| No Normal Mapping      | Normal Colors | Normal Mapping    |
+| No Normal Mapping      | Normal Mapping | Normal Colors    |
 | ------------- | ------------- | ------------- |
-| ![](img/cover_image.png) | ![](img/cover_image.png) | ![](img/cover_image.png)
+| ![](img/carbon_fibre_normals_off.png) | ![](img/carbon_fibre_normals_on.png) | ![](img/carbon_fibre_normal_map.png)
 
 ## BVH Acceleration 
 Not sure if I should add pics here?
@@ -103,7 +104,7 @@ Paths that reach a certain light threshold are automatically terminated...
 
 | Russian Roulette OFF    | Russian Roulette ON |
 | ------------- | ------------- |
-| ![](img/cover_image.png) | ![](img/cover_image.png) |
+| ![](img/cornell_rr_off.png) | ![](img/cornell_rr_on.png) |
 
 ## Material Sorting
 In scenes with a large amount of materials, it's more efficient to asdfasd (insert better explanation here)

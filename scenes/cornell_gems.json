@@ -36,26 +36,40 @@
             "TYPE": "DIFFUSE",
             "ALBEDO":[0.35, 0.85, 0.85]
         },
-        "specular_white":
-        {
-            "TYPE": "SPECULAR",
-            "ALBEDO":[0.98, 0.98, 0.98]
-        },
-        "reflective_magenta":
-        {
-            "TYPE": "SPECULAR",
-            "ALBEDO":[0.98, 0.35, 0.98]
-        },
-        "transmissive_yellow":
-        {
-            "TYPE": "TRANSMISSIVE",
-            "ALBEDO":[0.98, 0.98, 0.35],
-            "IOR": 1.55
-        },
-        "transmissive_glass":
+        "diamond":
         {
             "TYPE": "TRANSMISSIVE",
             "ALBEDO":[0.98, 0.98, 0.98],
+            "IOR": 2.418
+        },
+        "emerald":
+        {
+            "TYPE": "TRANSMISSIVE",
+            "ALBEDO":[0.53, 0.98, 0.53],
+            "IOR": 1.560
+        },
+        "ruby":
+        {
+            "TYPE": "TRANSMISSIVE",
+            "ALBEDO":[0.98, 0.53, 0.53],
+            "IOR": 1.757
+        },
+        "sapphire":
+        {
+            "TYPE": "TRANSMISSIVE",
+            "ALBEDO":[0.53, 0.53, 0.98],
+            "IOR": 1.757
+        },
+        "gold":
+        {
+            "TYPE": "TRANSMISSIVE",
+            "ALBEDO":[0.03, 0.33, 0.93],
+            "IOR": 1.757
+        },
+        "diamond2":
+        {
+            "TYPE": "TRANSMISSIVE",
+            "ALBEDO":[0.35, 0.98, 0.98],
             "IOR": 2.418
         }
     },
@@ -115,11 +129,45 @@
             "SCALE":[0.01,10.0,10.0]
         },
         {
-            "TYPE":"sphere",
-            "MATERIAL":"transmissive_glass",
-            "TRANS":[0.0,5.0,0.0],
+            "TYPE":"mesh",
+            "MATERIAL":"diamond",
+            "FILENAME": "../meshes/DragonAttenuation.glb",
+            "TRANS":[0.0,2.0,0.0],
+            "ROTAT":[90.0,0.0,0.0],
+            "SCALE":[0.5,0.5,0.5]
+        },
+        {
+            "TYPE":"mesh",
+            "MATERIAL":"ruby",
+            "FILENAME": "../meshes/gemstone2.glb",
+            "TRANS":[-2.0,5.0,-3.0],
+            "ROTAT":[0.0,0.0,180.0],
+            "SCALE":[0.1,0.1,0.1]
+        },
+        {
+            "TYPE":"mesh",
+            "MATERIAL":"emerald",
+            "FILENAME": "../meshes/avocado.glb",
+            "TRANS":[2.0,3.0,-2.0],
             "ROTAT":[0.0,0.0,0.0],
-            "SCALE":[4.0,4.0,4.0]
+            "SCALE":[70.0,70.0,70.0]
+        },
+        {
+            "TYPE":"mesh",
+            "MATERIAL":"sapphire",
+            "FILENAME": "../meshes/Duck.glb",
+            "TRANS":[3.0,0.0,2.0],
+            "ROTAT":[0.0,225.0,0.0],
+            "SCALE":[0.02,0.02,0.02]
+        },
+        {
+            "TYPE":"mesh",
+            "MATERIAL":"diamond2",
+            "FILENAME": "../meshes/gemstone.glb",
+            "TRANS":[-3.0,-0.5,-2.0],
+            "ROTAT":[-90.0,0.0,0.0],
+            "SCALE":[1.0,1.0,1.0]
         }
+        
     ]
 }

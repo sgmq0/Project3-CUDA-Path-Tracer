@@ -1,4 +1,8 @@
 {
+    "Scene":
+    {
+        "ENVIRONMENT": "../scenes/hdris/qwantani_sunset_puresky_4k.hdr"
+    },
     "Materials":
     {
         "light":
@@ -36,7 +40,7 @@
     },
     "Camera":
     {
-        "RES":[1920, 1080],
+        "RES":[1000, 1000],
         "FOVY":45.0,
         "ITERATIONS":5000,
         "DEPTH":8,
@@ -49,10 +53,9 @@
     [
         {
             "TYPE":"mesh",
-            "MATERIAL":"diffuse_white",
             "FILENAME": "../meshes/DamagedHelmet.glb",
-            "TRANS":[0.0,5.0,0.0],
-            "ROTAT":[90.0,0.0,0.0],
+            "TRANS":[0.0,5.0,7.0],
+            "ROTAT":[100.0,0.0,30.0],
             "SCALE":[3.0,3.0,3.0]
         }
     ]
