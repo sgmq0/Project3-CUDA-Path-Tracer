@@ -11,7 +11,7 @@ CUDA Path Tracer
 
 ![](img/minecraft1.png)
 
-![](img/minecraft2.png)
+![](img/dragons_rainbow.png)
 
 ![](img/env_map_clouds.png)
 
@@ -74,9 +74,9 @@ I modified the `Scene` class to load in a `HDRI` object, which contains an image
 ## GLTF Loading
 Thanks to the ![tinygltf](https://github.com/syoyo/tinygltf) library, the pathtracer is able to read in `.glb` files. Unlike `.obj`s, textures are stored directly within the `.glb` file, making texture mapping possible with a single file!
 
-| Minecraft Forest (30k tris)    | Multiple objects (??? tris) |
+| Minecraft Forest (30k tris)    | Multiple dragons (400k tris) |
 | ------------- | ------------- |
-| ![](img/cover_image.png) | ![](img/cover_image.png) |
+| ![](img/cover_image.png) | ![](img/dragons_rainbow.png) |
 
 ## Texture Mapping (Albedo + Normals)
 In a `.glb` file, each material stores the indices of its associated texture maps. For example, its albedo texture might be located at index 0, and its normal texture might be located at index 1. Inside the `MyMaterial` struct, `colorTextureIdx` and `normalTextureIdx` keeps track of these indices.
