@@ -50,7 +50,7 @@ When a ray is casted from the camera into the screen, its direction lands at the
 ## Refractive Materials
 With refractive materials, light passes through the object, sampling the scene behind and around it. When a ray enters an object, it is *refracted* in a direction calculated by Snell's law using the incoming ray direction and the material's index of refraction. When the ray exits the object, it is refracted again. 
 
-In real life, materials are often both refractive and transmissive. We represent this by randomly choosing to sample a reflected direction or a refracted direction, with the ![Fresnel factor](https://pbr-book.org/4ed/Reflection_Models/Specular_Reflection_and_Transmission) as the threshold. Combined, this results in a convincing transmissive surface.
+In real life, materials are often both reflective and transmissive. We represent this by randomly choosing to sample a reflected direction or a refracted direction, with the ![Fresnel factor](https://pbr-book.org/4ed/Reflection_Models/Specular_Reflection_and_Transmission) as the threshold. Combined, this results in a convincing transmissive surface.
 
 | Glass (IOR: 1.500)      | Diamond (IOR: 2.418)    |
 | ------------- | ------------- |
