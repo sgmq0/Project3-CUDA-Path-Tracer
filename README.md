@@ -9,6 +9,12 @@ CUDA Path Tracer
 
 ![](img/cover_image.png)
 
+![](img/minecraft1.png)
+
+![](img/minecraft2.png)
+
+![](img/env_map_clouds.png)
+
 # Project Summary
 This is a GPU-based renderer built with C++ and CUDA. Originally made for a computer graphics course, I plan to add additional features in the future. Currently, the renderer supports diffuse, perfectly specular, and transmissive/glass materials. It also supports imported models in glTF 2.0 format, albedo and normal maps, and HDR environment maps. The renderer uses a bounding volume heirarchy to render large models efficiently.
 
@@ -66,9 +72,9 @@ I modified the `Scene` class to load in a `HDRI` object, which contains an image
 | ![](img/env_map_studio.png) | ![](img/env_map_clouds.png) |
 
 ## GLTF Loading
+Thanks to the ![tinygltf](https://github.com/syoyo/tinygltf) library, the pathtracer is able to read in `.glb` files. Unlike `.obj`s, textures are stored directly within the `.glb` file, making texture mapping possible with a single file!
 
-
-| Dragon (130k tris)    | Multiple objects (??? tris) |
+| Minecraft Forest (30k tris)    | Multiple objects (??? tris) |
 | ------------- | ------------- |
 | ![](img/cover_image.png) | ![](img/cover_image.png) |
 
@@ -93,11 +99,21 @@ When the intersection is calculated, I first find the interpolated normal, tange
 | ![](img/carbon_fibre_normals_off.png) | ![](img/carbon_fibre_normals_on.png) | ![](img/carbon_fibre_normal_map.png)
 
 ## BVH Acceleration 
-Not sure if I should add pics here?
+Because I wanted to add custom mesh support, I needed a faster way to render each and every triangle. Naively, we can iterate through every triangle in the scene, testing a ray-triangle intersection with all of them... Obviously, with big meshes, this gets very slow.
 
-| Texture Mapping      | Texture + Normal Mapping |
+A bounding volume hierarchy (BVH) is a data structure that greatly speeds up mesh intersection testing. Essentially, every triangle in the scene is partitioned into two groups. Then the groups are partitioned into two more groups. So on and so forth, until a binary tree structure of polygons is built. 
+
+![alt text](whittedbvh.jpg)
+
+When computing an intersection, instead of checking the ray against every polygon in the scene, you check it against the bounding box of every node in the hierarchy. Then, only once you reach a leaf (a node containing only triangles) do you compute your ray-triangle intersections. 
+
+For this feature, I referenced ![Jacco Bikker](https://jacco.ompf2.com/2022/04/13/how-to-build-a-bvh-part-1-basics/)'s How To Build a BVH guide.
+
+This feature sped up my implementation by a *lot*!
+
+| Dragon (BVH off)    | Dragon (BVH on) |
 | ------------- | ------------- |
-| ![](img/cover_image.png) | ![](img/cover_image.png) |
+| ![](img/dragon_no_bvh.png) | ![](img/dragon_bvh.png) |
 
 ## Russian Roulette Path Termination
 Paths that reach a certain light threshold are automatically terminated...
