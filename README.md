@@ -105,8 +105,6 @@ Because I wanted to add custom mesh support, I needed a faster way to render eac
 
 A bounding volume hierarchy (BVH) is a data structure that greatly speeds up mesh intersection testing. Essentially, every triangle in the scene is partitioned into two groups. Then the groups are partitioned into two more groups. So on and so forth, until a binary tree structure of polygons is built. 
 
-![alt text](whittedbvh.jpg)
-
 When computing an intersection, instead of checking the ray against every polygon in the scene, you check it against the bounding box of every node in the hierarchy. Then, only once you reach a leaf (a node containing only triangles) do you compute your ray-triangle intersections. 
 
 For this feature, I referenced ![Jacco Bikker](https://jacco.ompf2.com/2022/04/13/how-to-build-a-bvh-part-1-basics/)'s How To Build a BVH guide.
