@@ -109,13 +109,14 @@ When computing an intersection, instead of checking the ray against every polygo
 
 For this feature, I referenced ![Jacco Bikker](https://jacco.ompf2.com/2022/04/13/how-to-build-a-bvh-part-1-basics/)'s How To Build a BVH guide.
 
-This feature sped up my implementation by a *lot*!
-
 | Dragon (BVH off)    | Dragon (BVH on) |
 | ------------- | ------------- |
 | ![](img/dragon_no_bvh.png) | ![](img/dragon_bvh.png) |
 
+### Performance
+This feature sped up my implementation by a *lot*!
 
+![](img/bvh_comparison.png)
 
 ## Russian Roulette Path Termination
 Russian Roulette path termination ![(PBRTv3 13.7)](https://pbr-book.org/3ed-2018/Monte_Carlo_Integration/Russian_Roulette_and_Splitting) is an optimization that essentially discards rays without enough light. That is, they don't contribute enough to the final output.
@@ -127,12 +128,15 @@ When we terminate rays early, we expect the pathtracer to speed up, and to get a
 | ![](img/cornell_rr_off.png) | ![](img/cornell_rr_on.png) |
 
 ### Performance
-As you can see...
+asdf
+
+![](img/bvh_comparison.png)
 
 ## Material Sorting
-In scenes with a large amount of materials, it can be more efficient to group the rays by the intersected material type, reducing divergence and speeding up the render.
+In scenes with a large amount of materials, it can be more efficient to group the rays by the intersected material type, reducing divergence and speeding up the render. I used the `sort_by_key` function in the `thrust` library.
 
 ### Performance
+![](img/material_sort_comparison.png)
 
 **SOURCES:**
 - pbr textbook

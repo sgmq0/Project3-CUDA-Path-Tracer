@@ -1,7 +1,7 @@
 {
     "Scene":
     {
-        "ENVIRONMENT": "../scenes/hdris/studio_small_03_4k.hdr"
+        "ENVIRONMENT": "../scenes/hdris/qwantani_noon_puresky_4k.hdr"
     },
     "Materials":
     {
@@ -76,21 +76,21 @@
         },
         {
             "TYPE":"mesh",
-            "MATERIAL":"specular_gold",
+            "MATERIAL":"diffuse_white",
             "FILENAME": "../meshes/DragonAttenuation.glb",
             "TRANS":[-1.0,0.0,0.0],
             "ROTAT":[90.0,0.0,-30.0],
             "SCALE":[0.5,0.5,0.5]
         },
         {
-            "TYPE":"mesh",
+            "MATERIAL":"diffuse_white",
             "FILENAME": "../meshes/avocado.glb",
             "TRANS":[8.0,0.0,0.0],
             "ROTAT":[-20.0,180.0,0.0],
             "SCALE":[70.0,70.0,70.0]
         },
         {
-            "TYPE":"mesh",
+            "MATERIAL":"diffuse_white",
             "FILENAME": "../meshes/Duck.glb",
             "TRANS":[4.0,0.0,0.0],
             "ROTAT":[0.0,225.0,0.0],
@@ -98,8 +98,8 @@
         },
         {
             "TYPE":"mesh",
-            "MATERIAL":"amethyst",
-            "FILENAME": "../meshes/gemstone.glb",
+            "MATERIAL":"diffuse_white",
+            "FILENAME": "../meshes/Duck.glb",
             "TRANS":[-8.0,-0.5,0.0],
             "ROTAT":[-90.0,0.0,0.0],
             "SCALE":[1.0,1.0,1.0]

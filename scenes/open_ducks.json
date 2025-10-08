@@ -1,0 +1,165 @@
+{
+    "Scene":
+    {
+        "ENVIRONMENT": "../scenes/hdris/qwantani_noon_puresky_4k.hdr"
+    },
+    "Materials":
+    {
+        "light":
+        {
+            "TYPE": "LIGHT",
+            "ALBEDO":[1.0, 1.0, 1.0],
+            "EMITTANCE": 5.0
+        },
+        "diffuse_white":
+        {
+            "TYPE": "DIFFUSE",
+            "ALBEDO":[0.98, 0.98, 0.98]
+        }
+    },
+    "Camera":
+    {
+        "RES":[1200,800],
+        "FOVY":30.0,
+        "ITERATIONS":5000,
+        "DEPTH":8,
+        "FILE":"cornell",
+        "EYE":[0.0,5.0,14.0],
+        "LOOKAT":[0.0,5.0,0.0],
+        "UP":[0.0,1.0,0.0]
+    },
+    "Objects":
+    [
+        {
+            "TYPE":"cube",
+            "MATERIAL":"diffuse_white",
+            "TRANS":[0.0,30.0,0.0],
+            "ROTAT":[0.0,0.0,0.0],
+            "SCALE":[5.0,0.3,5.0]
+        },
+        {
+            "TYPE":"cube",
+            "MATERIAL":"diffuse_white",
+            "TRANS":[0.0,0.0,0.0],
+            "ROTAT":[0.0,0.0,0.0],
+            "SCALE":[30.0,0.01,30.0]
+        },
+        {
+            "TYPE":"cube",
+            "MATERIAL":"diffuse_white",
+            "TRANS":[0.0,30.0,0.0],
+            "ROTAT":[0.0,0.0,90.0],
+            "SCALE":[0.01,30.0,30.0]
+        },
+        {
+            "TYPE":"cube",
+            "MATERIAL":"diffuse_white",
+            "TRANS":[0.0,15.0,-15.0],
+            "ROTAT":[0.0,90.0,0.0],
+            "SCALE":[0.01,30.0,30.0]
+        },
+        {
+            "TYPE":"cube",
+            "MATERIAL":"diffuse_white",
+            "TRANS":[0.0,15.0,15.0],
+            "ROTAT":[0.0,-90.0,0.0],
+            "SCALE":[0.01,30.0,30.0]
+        },
+        {
+            "TYPE":"cube",
+            "MATERIAL":"diffuse_white",
+            "TRANS":[-15.0,15.0,0.0],
+            "ROTAT":[0.0,0.0,0.0],
+            "SCALE":[0.01,30.0,30.0]
+        },
+        {
+            "TYPE":"cube",
+            "MATERIAL":"diffuse_white",
+            "TRANS":[15.0,15.0,0.0],
+            "ROTAT":[0.0,0.0,0.0],
+            "SCALE":[0.01,30.0,30.0]
+        },
+        {
+            "TYPE":"mesh",
+            "MATERIAL":"diffuse_white",
+            "FILENAME": "../meshes/Duck.glb",
+            "TRANS":[-10.0,0.0,0.0],
+            "ROTAT":[0.0,225.0,0.0],
+            "SCALE":[0.02,0.02,0.02]
+        },
+        {
+            "TYPE":"mesh",
+            "MATERIAL":"diffuse_white",
+            "FILENAME": "../meshes/Duck.glb",
+            "TRANS":[-5.0,0.0,0.0],
+            "ROTAT":[0.0,225.0,0.0],
+            "SCALE":[0.02,0.02,0.02]
+        },
+        {
+            "TYPE":"mesh",
+            "MATERIAL":"diffuse_white",
+            "FILENAME": "../meshes/Duck.glb",
+            "TRANS":[0.0,0.0,0.0],
+            "ROTAT":[0.0,225.0,0.0],
+            "SCALE":[0.02,0.02,0.02]
+        },
+        {
+            "TYPE":"mesh",
+            "MATERIAL":"diffuse_white",
+            "FILENAME": "../meshes/Duck.glb",
+            "TRANS":[5.0,0.0,0.0],
+            "ROTAT":[0.0,225.0,0.0],
+            "SCALE":[0.02,0.02,0.02]
+        },
+        {
+            "TYPE":"mesh",
+            "MATERIAL":"diffuse_white",
+            "FILENAME": "../meshes/Duck.glb",
+            "TRANS":[10.0,0.0,0.0],
+            "ROTAT":[0.0,225.0,0.0],
+            "SCALE":[0.02,0.02,0.02]
+        },
+        {
+            "TYPE":"mesh",
+            "MATERIAL":"diffuse_white",
+            "FILENAME": "../meshes/Duck.glb",
+            "TRANS":[-10.0,5.0,0.0],
+            "ROTAT":[0.0,225.0,0.0],
+            "SCALE":[0.02,0.02,0.02]
+        },
+        {
+            "TYPE":"mesh",
+            "MATERIAL":"diffuse_white",
+            "FILENAME": "../meshes/Duck.glb",
+            "TRANS":[-5.0,5.0,0.0],
+            "ROTAT":[0.0,225.0,0.0],
+            "SCALE":[0.02,0.02,0.02]
+        },
+        {
+            "TYPE":"mesh",
+            "MATERIAL":"diffuse_white",
+            "FILENAME": "../meshes/Duck.glb",
+            "TRANS":[0.0,5.0,0.0],
+            "ROTAT":[0.0,225.0,0.0],
+            "SCALE":[0.02,0.02,0.02]
+        },
+        {
+            "TYPE":"mesh",
+            "MATERIAL":"diffuse_white",
+            "FILENAME": "../meshes/Duck.glb",
+            "TRANS":[5.0,5.0,0.0],
+            "ROTAT":[0.0,225.0,0.0],
+            "SCALE":[0.02,0.02,0.02]
+        },
+        {
+            "TYPE":"mesh",
+            "MATERIAL":"diffuse_white",
+            "FILENAME": "../meshes/Duck.glb",
+            "TRANS":[10.0,5.0,0.0],
+            "ROTAT":[0.0,225.0,0.0],
+            "SCALE":[0.02,0.02,0.02]
+        }
+
+        
+    ]
+}
