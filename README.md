@@ -11,6 +11,8 @@ CUDA Path Tracer
 
 ![](img/minecraft1.png)
 
+![](img/minecraft2.png)
+
 ![](img/dragons_rainbow.png)
 
 ![](img/env_map_clouds.png)
