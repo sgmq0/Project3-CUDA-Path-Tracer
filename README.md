@@ -115,16 +115,24 @@ This feature sped up my implementation by a *lot*!
 | ------------- | ------------- |
 | ![](img/dragon_no_bvh.png) | ![](img/dragon_bvh.png) |
 
+
+
 ## Russian Roulette Path Termination
-Paths that reach a certain light threshold are automatically terminated...
+Russian Roulette path termination ![(PBRTv3 13.7)](https://pbr-book.org/3ed-2018/Monte_Carlo_Integration/Russian_Roulette_and_Splitting) is an optimization that essentially discards rays without enough light. That is, they don't contribute enough to the final output.
+
+When we terminate rays early, we expect the pathtracer to speed up, and to get a brighter final image. 
 
 | Russian Roulette OFF    | Russian Roulette ON |
 | ------------- | ------------- |
 | ![](img/cornell_rr_off.png) | ![](img/cornell_rr_on.png) |
 
-## Material Sorting
-In scenes with a large amount of materials, it's more efficient to asdfasd (insert better explanation here)
+### Performance
+As you can see...
 
+## Material Sorting
+In scenes with a large amount of materials, it can be more efficient to group the rays by the intersected material type, reducing divergence and speeding up the render.
+
+### Performance
 
 **SOURCES:**
 - pbr textbook
