@@ -118,10 +118,16 @@ For this feature, I referenced ![Jacco Bikker](https://jacco.ompf2.com/2022/04/1
 ### Performance
 This feature sped up my implementation by a *lot*!
 
+As you can see, BVH speeds up mesh loading by hundreds of times. This is incredibly noticable on large models, such as the model with 130k tris, going from 10 seconds(!) per frame to just 67 ms. This is a 173x speedup.
+
+The speed up is less noticable but still very much there with a smaller mesh like the duck with 4k tris, resulting in a 4x speedup.
+
+Generally, it seems that BVH acceleration has more striking results with larger meshes. Since the BVH is constructed on the CPU, the amount of data to parse through doesn't affect the renderer's performance except in the number of triangles to render.
+
 ![](img/bvh_comparison.png)
 
 ## Russian Roulette Path Termination
-Russian Roulette path termination ![(PBRTv3 13.7)](https://pbr-book.org/3ed-2018/Monte_Carlo_Integration/Russian_Roulette_and_Splitting) is an optimization that essentially discards rays without enough light. That is, they don't contribute enough to the final output.
+Russian Roulette path termination ![(PBRTv3 13.7)](https://pbr-book.org/3ed-2018/Monte_Carlo_Integration/Russian_Roulette_and_Splitting) is an optimization that essentially discards rays without enough light. That is, they don't contribute enough to the final output. The threshold `p` I picked was `0.05`.
 
 When we terminate rays early, we expect the pathtracer to speed up, and to get a brighter final image. 
 
@@ -130,18 +136,28 @@ When we terminate rays early, we expect the pathtracer to speed up, and to get a
 | ![](img/cornell_rr_off.png) | ![](img/cornell_rr_on.png) |
 
 ### Performance
-asdf
+Unfortunately, it seemed like Russian roulette path termination caused a noticable increase in render time in the closed scene, but caused a small (3 ms/frame) decrease in render time in the open scene. 
 
-![](img/bvh_comparison.png)
+I'm not sure why this could be happening. My hypothesis was that in a closed scene with few lights (like a Cornell box), rays are less likely to hit a light source, thus decreasing their brightness and increasing their odds of being terminated by Russian roulette.
+
+![](img/rr_comparison.png)
 
 ## Material Sorting
-In scenes with a large amount of materials, it can be more efficient to group the rays by the intersected material type, reducing divergence and speeding up the render. I used the `sort_by_key` function in the `thrust` library.
+In scenes with a large amount of materials, it can be more efficient to group the rays by the intersected material type, reducing divergence and speeding up the render. I used the `sort_by_key` function in the `thrust` library, and created a custom `sort_materials` predicate.
 
 ### Performance
 ![](img/material_sort_comparison.png)
 
-**SOURCES:**
-- pbr textbook
+Regardless of how many materials are in the scene, material sorting seems to require too much overhead to be worth it. When testing on open vs closed scenes, it seemed like there was a slight improvement in speed when using many materials in an open scene, but only by about 4 ms/frame. Perhaps this would change with 100 or even 1000 materials...
+
+## Future Ideas
+Though I'm done with this for now, in the near future I want to add improvements to the materials, such as a GGX microfacet model or subsurface scattering. Eventually, I want to implement something along the lines of the Disney BSDF model to support more artist-friendly materials.
+
+I also want to add some post-process effects, like distance fog, to improve the look of the Minecraft scenes.
+
+## Sources
+- Made liberal use of the ![PBR Textbook](https://pbr-book.org/3ed-2018/contents)
+- All models are from Sketchfab, all HDRIs are from Polyhaven.
 - https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/moller-trumbore-ray-triangle-intersection.html
 - https://tavianator.com/2022/ray_box_boundary.html
 - https://jacco.ompf2.com/2022/04/13/how-to-build-a-bvh-part-1-basics/
